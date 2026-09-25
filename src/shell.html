@@ -1,19 +1,47 @@
-<a class="skip" href="#main" data-skip>Saltar al contenido</a>
+<a class="skip" href="#main" data-act="skip">Saltar al contenido</a>
 
-<div class="proto">
+<div class="proto" role="region" aria-label="Controles del prototipo">
   <div class="proto-in">
-    <span class="proto-tag">Borrador</span>
-    <span class="proto-name">Rediseño giftronic04.com</span>
-    <nav class="proto-views" aria-label="Vistas del prototipo">
-      <a href="#inicio" data-go="inicio">Home</a>
-      <a href="#categoria" data-go="categoria">Categoría</a>
-      <a href="#producto" data-go="producto">Producto</a>
-      <a href="#plan" data-go="plan">Plan de cambios</a>
+    <span class="proto-tag">Prototipo</span>
+    <label class="proto-go"><span class="sr-only">Ir a la vista</span>
+      <select id="proto-route" data-ch="route">
+        <optgroup label="Tienda">
+          <option value="#/">1 · Portada</option>
+          <option value="#/categoria/portatiles">2 · Categoría: Portátiles</option>
+          <option value="#/buscar?q=portatil">3 · Búsqueda</option>
+          <option value="#/buscar?q=nevera">3 · Búsqueda sin resultados</option>
+          <option value="#/producto/acer-aspire-go-15">4 · Producto simple</option>
+          <option value="#/producto/combo-samsung-qled-40">5 · Producto combo</option>
+          <option value="#/producto/acer-nitro-v15">6 · Producto agotado</option>
+          <option value="#/producto/hp-15-fc0354la">6 · Producto con variantes</option>
+          <option value="#/carrito">7 · Carrito</option>
+          <option value="#/checkout">8 · Checkout</option>
+          <option value="#/pedido-confirmado">9 · Pedido confirmado</option>
+          <option value="#/cuenta">10 · Mi cuenta</option>
+          <option value="#/rastreo">11 · Rastrear pedido</option>
+          <option value="#/ofertas">12 · Ofertas y combos</option>
+          <option value="#/cuotas">13 · Compra a cuotas</option>
+          <option value="#/nosotros">14 · Quiénes somos</option>
+          <option value="#/legal/envios">15 · Políticas (legal)</option>
+          <option value="#/contacto">16 · Contacto y FAQ</option>
+          <option value="#/404">17 · Error 404</option>
+        </optgroup>
+        <optgroup label="Documentación">
+          <option value="#/design-system">Sistema de diseño</option>
+          <option value="#/plan">Plan de implementación</option>
+        </optgroup>
+      </select>
+    </label>
+    <nav class="proto-quick" aria-label="Accesos rápidos del prototipo">
+      <a href="#/">Portada</a>
+      <a href="#/producto/combo-samsung-qled-40">Producto</a>
+      <a href="#/checkout">Checkout</a>
+      <a href="#/design-system">Design system</a>
+      <a href="#/plan">Plan</a>
     </nav>
-    <span class="proto-note">Envío, stock, cuotas y horario: datos de ejemplo</span>
     <div class="proto-device" role="group" aria-label="Tamaño de pantalla">
-      <button type="button" data-device="desktop" aria-pressed="true"><i data-i="monitor" data-s="16"></i>Escritorio</button>
-      <button type="button" data-device="phone" aria-pressed="false"><i data-i="smartphone" data-s="16"></i>Móvil</button>
+      <button type="button" data-act="device" data-d="desktop" aria-pressed="true"><i data-i="monitor" data-s="16"></i>Escritorio</button>
+      <button type="button" data-act="device" data-d="phone" aria-pressed="false"><i data-i="smartphone" data-s="16"></i>Móvil</button>
     </div>
   </div>
 </div>
@@ -21,161 +49,134 @@
 <div class="stage" id="stage">
   <div class="device" id="device">
     <div class="viewport" id="viewport">
-
-      <div class="topbar">
+      <div class="topbar" data-chrome="store">
         <div class="wrap">
           <ul class="topbar-list" id="topbar">
-            <li class="is-on"><i data-i="truck" data-s="16"></i>Envío gratis a todo Colombia</li>
-            <li><i data-i="card" data-s="16"></i>Paga hasta en 36 cuotas</li>
+            <li class="is-on"><i data-i="truck" data-s="16"></i><span id="tb-ship"></span></li>
+            <li><i data-i="card" data-s="16"></i>Hasta 36 cuotas</li>
             <li><i data-i="receipt" data-s="16"></i>Factura electrónica</li>
           </ul>
         </div>
       </div>
 
-      <header class="hdr">
+      <header class="hdr" id="hdr" data-chrome="store">
         <div class="wrap hdr-in">
-          <button type="button" class="icon-btn hdr-menu" data-open="menu" aria-label="Abrir categorías"><i data-i="menu" data-s="24"></i></button>
-          <a class="logo" href="#inicio" data-go="inicio" aria-label="Giftronic04.com, ir al inicio">
+          <button type="button" class="icon-btn hdr-menu" data-act="open" data-layer="menu" aria-label="Abrir categorías"><i data-i="menu" data-s="24"></i></button>
+          <a class="logo" href="#/" aria-label="Giftronic04.com, ir al inicio">
             <svg class="logo-mark" viewBox="0 0 34 30" aria-hidden="true"><rect x="1" y="1" width="32" height="21" rx="4" fill="#FF6B00"/><rect x="4.5" y="4.5" width="25" height="14" rx="1.6" fill="#0B0B0F"/><path d="M7.5 15.5 13 10l3.5 3 5-5" stroke="#FF6B00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 28.5h8M17 22.5v6" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/></svg>
             <span class="logo-word">GIFTRONIC<b>04</b><small>.COM</small></span>
           </a>
-          <form class="search" role="search" id="search" autocomplete="off">
+          <form class="search" role="search" id="search" data-form="search" autocomplete="off">
             <i data-i="search" data-s="20"></i>
             <label class="sr-only" for="q">Buscar productos</label>
-            <input id="q" type="search" placeholder="Busca portátiles, TVs, impresoras…" aria-controls="suggest" aria-autocomplete="list">
+            <input id="q" name="q" type="search" placeholder="Busca portátiles, TVs, impresoras…" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list">
             <button class="search-btn" type="submit" aria-label="Buscar"><i data-i="search" data-s="18"></i><span>Buscar</span></button>
-            <div class="suggest" id="suggest" role="listbox" aria-label="Sugerencias" hidden></div>
+            <div class="suggest" id="suggest" role="listbox" aria-label="Sugerencias de búsqueda" hidden></div>
           </form>
           <div class="hdr-actions">
-            <a class="hdr-act" href="https://wa.me/573017913140" target="_blank" rel="noopener" aria-label="Asesoría por WhatsApp"><i data-i="chat" data-s="22"></i><span class="t"><small>Asesoría</small>WhatsApp</span></a>
-            <a class="hdr-act hide-sm" href="#inicio" data-toast="Aquí va el acceso a Mi cuenta de WooCommerce."><i data-i="user" data-s="22"></i><span class="t"><small>Hola,</small>Mi cuenta</span></a>
-            <button type="button" class="hdr-act" data-open="cart" id="cart-btn" aria-label="Carrito, 0 productos"><i data-i="cart" data-s="22"></i><span class="cart-count" id="cart-count">0</span><span class="t"><small>Tu compra</small>Carrito</span></button>
+            <button type="button" class="hdr-act search-toggle" data-act="search-toggle" aria-label="Mostrar buscador"><i data-i="search" data-s="22"></i></button>
+            <a class="hdr-act only-lg" href="https://wa.me/573017913140" target="_blank" rel="noopener" aria-label="Asesoría por WhatsApp"><i data-i="chat" data-s="22"></i><span class="t"><small>Asesoría</small>WhatsApp</span></a>
+            <a class="hdr-act only-lg" href="#/cuenta"><i data-i="user" data-s="22"></i><span class="t"><small>Hola,</small>Mi cuenta</span></a>
+            <button type="button" class="hdr-act" data-act="open" data-layer="cart" id="cart-btn" aria-label="Carrito, 0 productos"><i data-i="cart" data-s="22"></i><span class="count-badge" data-cart-count>0</span><span class="t"><small>Tu compra</small>Carrito</span></button>
           </div>
         </div>
         <nav class="catnav" aria-label="Categorías">
           <div class="wrap catnav-in">
-            <button type="button" class="catnav-all" id="mega-btn" aria-expanded="false" aria-controls="mega"><i data-i="menu" data-s="18"></i>Todas las categorías<i data-i="down" data-s="16" class="chev"></i></button>
-            <a href="#categoria" data-cat="Portátiles">Portátiles</a>
-            <a href="#categoria" data-cat="Televisores">Televisores</a>
-            <a href="#producto" data-go="producto">Combos TV + barra</a>
-            <a href="#categoria" data-cat="Impresoras">Impresoras</a>
-            <a href="#categoria" data-cat="Tablets">Tablets</a>
-            <a href="#categoria" data-cat="Gaming">Gaming</a>
-            <a href="#plan" data-go="plan" class="deal"><i data-i="tag" data-s="16"></i>Ofertas reales</a>
+            <button type="button" class="catnav-all" id="mega-btn" data-act="mega" aria-expanded="false" aria-controls="mega"><i data-i="menu" data-s="18"></i>Todas las categorías<i data-i="down" data-s="16" class="chev"></i></button>
+            <a href="#/categoria/portatiles">Portátiles</a>
+            <a href="#/categoria/televisores">Televisores</a>
+            <a href="#/categoria/combos-tv">Combos TV + barra</a>
+            <a href="#/categoria/impresion">Impresoras</a>
+            <a href="#/categoria/tablets">Tablets</a>
+            <a href="#/categoria/gaming">Gaming</a>
+            <a href="#/cuotas">Compra a cuotas</a>
+            <a href="#/ofertas" class="deal"><i data-i="tag" data-s="16"></i>Ofertas</a>
           </div>
-          <div class="mega" id="mega" hidden>
-            <div class="wrap">
-              <div class="mega-grid" id="mega-grid"></div>
-              <div class="mega-foot"><span>¿No sabes cuál elegir? Te asesoramos sin compromiso.</span><a href="https://wa.me/573017913140" target="_blank" rel="noopener"><i data-i="chat" data-s="16"></i>Escríbenos por WhatsApp</a></div>
-            </div>
-          </div>
+          <div class="mega" id="mega" hidden><div class="wrap mega-in" id="mega-in"></div></div>
         </nav>
       </header>
 
-      <main id="main" tabindex="-1">
-<!--VIEWS-->
-      </main>
+      <header class="hdr-min" id="hdr-min" data-chrome="checkout" hidden>
+        <div class="wrap">
+          <a class="logo" href="#/carrito" aria-label="Giftronic04.com, volver al carrito">
+            <svg class="logo-mark" viewBox="0 0 34 30" aria-hidden="true"><rect x="1" y="1" width="32" height="21" rx="4" fill="#FF6B00"/><rect x="4.5" y="4.5" width="25" height="14" rx="1.6" fill="#0B0B0F"/><path d="M7.5 15.5 13 10l3.5 3 5-5" stroke="#FF6B00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 28.5h8M17 22.5v6" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/></svg>
+            <span class="logo-word">GIFTRONIC<b>04</b><small>.COM</small></span>
+          </a>
+          <span class="secure"><i data-i="lock" data-s="16"></i>Pago seguro</span>
+          <a class="icon-btn" href="https://wa.me/573017913140?text=Hola%2C%20necesito%20ayuda%20con%20mi%20pago" target="_blank" rel="noopener" aria-label="Ayuda por WhatsApp"><i data-i="chat" data-s="22"></i></a>
+        </div>
+      </header>
 
-      <footer class="foot dark">
+      <main id="main" tabindex="-1"></main>
+
+      <footer class="foot dark" data-chrome="store">
         <div class="wrap">
           <div class="foot-grid">
-            <div class="about">
-              <a class="logo" href="#inicio" data-go="inicio" aria-label="Giftronic04.com, ir al inicio">
-                <svg class="logo-mark" viewBox="0 0 34 30" aria-hidden="true"><rect x="1" y="1" width="32" height="21" rx="4" fill="#FF6B00"/><rect x="4.5" y="4.5" width="25" height="14" rx="1.6" fill="#0B0B0F"/><path d="M7.5 15.5 13 10l3.5 3 5-5" stroke="#FF6B00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 28.5h8M17 22.5v6" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/></svg>
-                <span class="logo-word">GIFTRONIC<b>04</b><small>.COM</small></span>
-              </a>
-              <p>Tecnología original con garantía de marca. Estamos a tu servicio en toda Colombia.</p>
-              <div class="contact">
-                <a href="https://wa.me/573017913140" target="_blank" rel="noopener"><i data-i="chat" data-s="18"></i>+57 301 791 3140 <small>WhatsApp</small></a>
-                <a href="mailto:info@giftronic04.com"><i data-i="mail" data-s="18"></i>info@giftronic04.com</a>
-                <span><i data-i="clock" data-s="18"></i>Horario de atención <small>por confirmar</small></span>
-              </div>
-            </div>
-            <div>
-              <h3>Comprar</h3>
-              <ul>
-                <li><a href="#categoria" data-cat="Portátiles">Portátiles</a></li>
-                <li><a href="#categoria" data-cat="Televisores">Televisores</a></li>
-                <li><a href="#producto" data-go="producto">Combos TV + barra</a></li>
-                <li><a href="#categoria" data-cat="Impresoras">Impresoras</a></li>
-                <li><a href="#categoria" data-cat="Tablets">Tablets</a></li>
-                <li><a href="#categoria" data-cat="Gaming">Gaming</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3>Ayuda y políticas</h3>
-              <ul>
-                <li><a href="#plan" data-go="plan">Garantías</a></li>
-                <li><a href="#plan" data-go="plan">Envíos y entregas</a></li>
-                <li><a href="#plan" data-go="plan">Cambios y devoluciones</a></li>
-                <li><a href="#plan" data-go="plan">Derecho de retracto</a></li>
-                <li><a href="#plan" data-go="plan">Términos y condiciones</a></li>
-                <li><a href="#plan" data-go="plan">Tratamiento de datos personales</a></li>
-                <li><a href="#inicio" data-toast="Aquí va el rastreo de pedidos de WooCommerce.">Rastrear mi pedido</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3>Síguenos</h3>
-              <ul>
-                <li><a href="https://www.instagram.com/giftronic.04/" target="_blank" rel="noopener">Instagram · @giftronic.04</a></li>
-                <li><a href="https://www.facebook.com/102269164857514" target="_blank" rel="noopener">Facebook · Giftronic04</a></li>
-              </ul>
-            </div>
+            <div><h2>Compañía</h2><ul>
+              <li><a href="#/nosotros">Quiénes somos</a></li><li><a href="#/ofertas">Ofertas y combos</a></li><li><a href="#/cuotas">Compra a cuotas</a></li><li><a href="#/categoria/todo">Todo el catálogo</a></li></ul></div>
+            <div><h2>Ayuda</h2><ul>
+              <li><a href="#/rastreo">Rastrear pedido</a></li><li><a href="#/cuenta">Mi cuenta</a></li><li><a href="#/contacto">Preguntas frecuentes</a></li><li><a href="#/contacto">Contacto</a></li></ul></div>
+            <div><h2>Políticas</h2><ul>
+              <li><a href="#/legal/envios">Envíos y entregas</a></li><li><a href="#/legal/garantia">Garantía</a></li><li><a href="#/legal/devoluciones">Devoluciones y retracto</a></li><li><a href="#/legal/terminos">Términos y condiciones</a></li><li><a href="#/legal/privacidad">Privacidad y datos</a></li></ul></div>
+            <div><h2>Contacto</h2><ul>
+              <li><a href="https://wa.me/573017913140" target="_blank" rel="noopener"><i data-i="chat" data-s="16"></i>+57 301 791 3140</a></li>
+              <li><a href="mailto:info@giftronic04.com"><i data-i="mail" data-s="16"></i>info@giftronic04.com</a></li>
+              <li><a href="https://www.instagram.com/giftronic.04/" target="_blank" rel="noopener"><i data-i="camera" data-s="16"></i>Instagram</a></li>
+              <li><a href="https://www.facebook.com/102269164857514" target="_blank" rel="noopener"><i data-i="users" data-s="16"></i>Facebook</a></li></ul></div>
           </div>
-          <div class="foot-pay">
-            <span>Medios de pago</span>
-            <ul class="pay dark"><li>Wompi</li><li>PSE</li><li>Nequi</li><li>Visa</li><li>Mastercard</li><li>Addi</li><li>Sumas Pay</li><li>Sistecrédito</li></ul>
-          </div>
+          <div class="foot-nl"><div><strong>Ofertas reales, una vez por semana</strong><span>Sin spam. Te das de baja cuando quieras.</span></div><div id="foot-nl"></div></div>
+          <div class="foot-pay"><span>Medios de pago</span><ul class="pay dark"><li>Wompi</li><li>PSE</li><li>Nequi</li><li>Bancolombia</li><li>Visa</li><li>Mastercard</li><li>Addi</li><li>Sumas Pay</li><li>Sistecrédito</li></ul></div>
           <div class="foot-legal">
-            <span>© 2026 Giftronic04.com · Precios en pesos colombianos (COP) con IVA incluido.</span>
+            <span>© 2026 Giftronic04.com · Razón social [por confirmar] · NIT [por confirmar] · Precios en COP con IVA incluido.</span>
             <a class="sic" href="https://www.sic.gov.co" target="_blank" rel="noopener"><i data-i="shield" data-s="18"></i>Superintendencia de Industria y Comercio</a>
           </div>
         </div>
       </footer>
     </div>
 
-    <!-- Menú móvil -->
+    <nav class="bnav" id="bnav" aria-label="Navegación principal" hidden>
+      <a href="#/" data-nav="home"><i data-i="home" data-s="22"></i>Inicio</a>
+      <button type="button" data-act="open" data-layer="menu" data-nav="cats"><i data-i="grid" data-s="22"></i>Categorías</button>
+      <a href="#/buscar" data-nav="search"><i data-i="search" data-s="22"></i>Buscar</a>
+      <button type="button" data-act="open" data-layer="cart" data-nav="cart"><i data-i="cart" data-s="22"></i><span class="count-badge" data-cart-count>0</span>Carrito</button>
+      <a href="#/cuenta" data-nav="account"><i data-i="user" data-s="22"></i>Cuenta</a>
+    </nav>
+    <a class="wa-float" id="wa-float" href="https://wa.me/573017913140" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp"><i data-i="chat" data-s="28"></i></a>
+    <div class="buybar" id="buybar" hidden></div>
+    <div class="cmpbar" id="cmpbar" role="region" aria-label="Comparador" hidden></div>
+
     <div class="layer" id="layer-menu" hidden>
-      <div class="scrim" data-close></div>
+      <div class="scrim" data-act="close"></div>
       <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="menu-t">
-        <div class="sheet-h"><h2 id="menu-t">Categorías</h2><button type="button" class="icon-btn" data-close aria-label="Cerrar menú"><i data-i="x" data-s="22"></i></button></div>
-        <div class="sheet-b">
-          <div id="mfams"></div>
-          <div class="m-quick">
-            <a class="btn btn-ghost" href="https://wa.me/573017913140" target="_blank" rel="noopener"><i data-i="chat" data-s="18"></i>Asesoría por WhatsApp</a>
-            <a class="btn btn-ghost" href="#inicio" data-close data-toast="Aquí va el acceso a Mi cuenta de WooCommerce."><i data-i="user" data-s="18"></i>Mi cuenta</a>
-          </div>
-        </div>
+        <div class="sheet-h"><h2 id="menu-t">Categorías</h2><button type="button" class="icon-btn" data-act="close" aria-label="Cerrar menú"><i data-i="x" data-s="22"></i></button></div>
+        <div class="sheet-b"><div id="mfams"></div>
+          <div class="m-quick"><a class="btn btn-ghost" href="#/ofertas"><i data-i="tag" data-s="18"></i>Ofertas</a><a class="btn btn-ghost" href="#/cuotas"><i data-i="card" data-s="18"></i>Compra a cuotas</a><a class="btn btn-ghost" href="https://wa.me/573017913140" target="_blank" rel="noopener"><i data-i="chat" data-s="18"></i>Asesoría por WhatsApp</a></div></div>
       </div>
     </div>
-
-    <!-- Carrito -->
     <div class="layer right" id="layer-cart" hidden>
-      <div class="scrim" data-close></div>
+      <div class="scrim" data-act="close"></div>
       <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cart-t">
-        <div class="sheet-h"><h2 id="cart-t">Tu carrito</h2><button type="button" class="icon-btn" data-close aria-label="Cerrar carrito"><i data-i="x" data-s="22"></i></button></div>
+        <div class="sheet-h"><h2 id="cart-t">Tu carrito</h2><button type="button" class="icon-btn" data-act="close" aria-label="Cerrar carrito"><i data-i="x" data-s="22"></i></button></div>
         <div class="sheet-b" id="cart-body"></div>
         <div class="sheet-f" id="cart-foot"></div>
       </div>
     </div>
-
-    <!-- Filtros móvil -->
-    <div class="layer right" id="layer-filters" hidden>
-      <div class="scrim" data-close></div>
+    <div class="layer bottom" id="layer-filters" hidden>
+      <div class="scrim" data-act="close"></div>
       <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="flt-t">
-        <div class="sheet-h"><h2 id="flt-t">Filtrar portátiles</h2><button type="button" class="icon-btn" data-close aria-label="Cerrar filtros"><i data-i="x" data-s="22"></i></button></div>
+        <span class="sheet-grab" aria-hidden="true"></span>
+        <div class="sheet-h"><h2 id="flt-t">Filtrar</h2><button type="button" class="icon-btn" data-act="close" aria-label="Cerrar filtros"><i data-i="x" data-s="22"></i></button></div>
         <div class="sheet-b" id="filters-m"></div>
-        <div class="sheet-f">
-          <button type="button" class="btn btn-primary btn-lg btn-block" data-close id="flt-apply">Ver productos</button>
-          <button type="button" class="btn btn-ghost btn-block" data-clear>Limpiar filtros</button>
-        </div>
+        <div class="sheet-f"><button type="button" class="btn btn-primary btn-lg btn-block" data-act="close" id="flt-apply">Ver productos</button><button type="button" class="btn btn-ghost btn-block" data-act="clear-filters">Limpiar filtros</button></div>
       </div>
     </div>
-
+    <div class="layer center" id="layer-modal" hidden>
+      <div class="scrim" data-act="close"></div>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modal-t">
+        <div class="sheet-h"><h2 id="modal-t"></h2><button type="button" class="icon-btn" data-act="close" aria-label="Cerrar"><i data-i="x" data-s="22"></i></button></div>
+        <div class="sheet-b" id="modal-b"></div>
+      </div>
+    </div>
     <div id="toast-slot" aria-live="polite"></div>
   </div>
-</div>
-
-<div class="doc" id="v-plan" hidden>
-<!--PLAN-->
 </div>
