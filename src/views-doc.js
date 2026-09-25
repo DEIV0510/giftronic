@@ -22,10 +22,10 @@ function viewDesignSystem() {
       ${[56, 40, 32, 24, 20, 18, 16, 14, 12].map(s => `<div class="type-row"><code>${s} px</code><span style="font-size:${s}px;font-weight:${s >= 20 ? 800 : s === 16 ? 500 : 600};letter-spacing:${s >= 32 ? '-.03em' : 0};line-height:1.2">${s >= 32 ? 'Tecnología original' : s >= 18 ? 'Portátil Aspire Go 15' : 'Llega en 24–48 h a ciudades principales'}</span></div>`).join('')}
       <div class="type-row"><code>Precio</code><span class="price" style="font-size:40px">${cop(1874900)}</span></div>
 
-      <h2>Espaciado, radios y sombras</h2><p>Base de 4 px. Radios de 8 (inputs), 12 (botones), 16 (tarjetas) y 24 (modales). Tres niveles de sombra.</p>
+      <h2>Espaciado, esquinas y sombras</h2><p>Base de 4 px. Esquinas rectas (radio 0) en todos los componentes para una imagen más seria; solo los botones de opción y el punto de stock son circulares por convención. Tres niveles de sombra.</p>
       <div class="split" style="gap:24px"><div>${[4, 8, 12, 16, 24, 32, 48, 64, 96].map(s => `<div class="space-row"><i style="width:${s * 2}px"></i>${s} px</div>`).join('')}</div>
-        <div class="ds-grid">${[['8 px', 8], ['12 px', 12], ['16 px', 16], ['24 px', 24]].map(([l, r]) => `<div class="ds-cell"><span style="display:block;width:84px;height:64px;background:#fff;border:1px solid var(--color-border-strong);border-radius:${r}px"></span>${l}</div>`).join('')}
-          ${[1, 2, 3].map(n => `<div class="ds-cell"><span style="display:block;width:84px;height:64px;background:#fff;border-radius:16px;box-shadow:var(--sh-${n})"></span>Sombra ${n}</div>`).join('')}</div></div>
+        <div class="ds-grid"><div class="ds-cell"><span style="display:block;width:84px;height:64px;background:#fff;border:1px solid var(--color-border-strong)"></span>Esquina recta · 0 px</div>
+          ${[1, 2, 3].map(n => `<div class="ds-cell"><span style="display:block;width:84px;height:64px;background:#fff;box-shadow:var(--sh-${n})"></span>Sombra ${n}</div>`).join('')}</div></div>
 
       <h2>Botones</h2><p>Primario (una sola acción principal por vista), secundario, fantasma y oscuro. Todos miden al menos 44 px de alto.</p>
       ${[['btn-primary', 'Comprar ahora'], ['btn-secondary', 'Agregar al carrito'], ['btn-ghost', 'Asesoría'], ['btn-dark', 'Agregar']].map(([c, t]) => `<div class="ds-grid" style="margin-bottom:12px">${[['Normal', ''], ['Hover', ' is-hover'], ['Foco', ' is-focus'], ['Deshabilitado', '', 'disabled'], ['Cargando', ' is-loading']].map(([l, x, dis]) => `<div class="ds-cell">${l}<button type="button" class="btn ${c}${x}" ${dis ? 'disabled' : 'tabindex="-1"'}>${t}</button></div>`).join('')}</div>`).join('')}
@@ -48,7 +48,7 @@ function viewDesignSystem() {
       <h3>Cantidad</h3><div class="qty" role="group" aria-label="Cantidad de ejemplo"><button type="button" disabled aria-label="Quitar uno">${ic('minus', 18)}</button><output>1</output><button type="button" aria-label="Agregar uno">${ic('plus', 18)}</button></div>
 
       <h2>Tarjeta de producto</h2><p>Estados: normal, hover (segunda imagen), agotado y cargando.</p>
-      <div class="ds-cards">${cardState(sample, '', 'Normal')}${cardState(sample, 'is-hover', 'Hover')}${cardState(out, '', 'Agotado')}<div><p class="lbl">Cargando</p><article class="card is-skeleton" aria-busy="true" aria-label="Cargando producto"><div class="card-media is-loading keep"><span class="sk"></span></div><div class="card-body"><span class="sk-line" style="width:40%"></span><span class="sk-line" style="width:90%;height:16px"></span><span class="sk-line" style="width:70%"></span><span class="sk-line" style="width:55%;height:22px;margin-top:auto"></span><span class="sk-line" style="height:44px;border-radius:12px"></span></div></article></div></div>
+      <div class="ds-cards">${cardState(sample, '', 'Normal')}${cardState(sample, 'is-hover', 'Hover')}${cardState(out, '', 'Agotado')}<div><p class="lbl">Cargando</p><article class="card is-skeleton" aria-busy="true" aria-label="Cargando producto"><div class="card-media is-loading keep"><span class="sk"></span></div><div class="card-body"><span class="sk-line" style="width:40%"></span><span class="sk-line" style="width:90%;height:16px"></span><span class="sk-line" style="width:70%"></span><span class="sk-line" style="width:55%;height:22px;margin-top:auto"></span><span class="sk-line" style="height:44px"></span></div></article></div></div>
 
       <h2>Estados de contenido</h2><p>Vacío, error y éxito comparten el mismo bloque.</p>
       <div class="split" style="gap:16px">${stateHTML({ icon:'cart', title:'Tu carrito está vacío', text:'Explora las ofertas o busca lo que necesitas.', actions:'<a class="btn btn-dark btn-sm" href="#/ofertas">Ver ofertas</a>' })}${stateHTML({ icon:'alert', kind:'error', title:'No pudimos cargar los productos', text:'Revisa tu conexión e inténtalo de nuevo.', actions:'<button type="button" class="btn btn-dark btn-sm" data-act="toast" data-msg="Reintentando…">Reintentar</button>' })}</div>
@@ -111,7 +111,7 @@ function viewPlan() {
 
       <h2>Decisiones de diseño</h2><p>Supuestos y decisiones tomadas donde el brief dejaba margen.</p>
       <ol class="decisions">
-        <li><b>Naranja accesible.</b> #FF6A00 da 2,9:1 sobre blanco y no cumple AA; los CTA, precios y badges usan #D24410 (4,6:1). El naranja del logo queda para el logo y fondos oscuros.</li>
+        <li><b>Esquinas rectas y naranja accesible.</b> Todos los componentes van a 90° (radio 0) para una imagen más seria. Además, #FF6A00 da 2,9:1 sobre blanco y no cumple AA; los CTA, precios y badges usan #D24410 (4,6:1). El naranja del logo queda para el logo y fondos oscuros.</li>
         <li><b>La galería queda fija, no la columna de compra.</b> Con 12 bloques la columna es más alta que la pantalla; fijarla escondería el final. La galería (más corta) acompaña el scroll.</li>
         <li><b>Ficha móvil compacta.</b> Galería de 220 px y nombre, precios y stock en el primer pantallazo; el CTA vive en la barra fija inferior.</li>
         <li><b>Barra de navegación inferior en móvil.</b> Inicio, Categorías, Buscar, Carrito y Cuenta al alcance del pulgar. Se oculta en la ficha (la reemplaza la barra de compra) y en el checkout.</li>

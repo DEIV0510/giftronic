@@ -125,7 +125,7 @@ function megaHTML(fid) {
   return `<ul class="mega-fams" role="tablist" aria-orientation="vertical" aria-label="Familias">${FAMILIES.map(x => `<li role="presentation"><button type="button" class="mega-fam" role="tab" aria-selected="${x.id === fid}" aria-controls="mega-panel" data-act="mega-fam" data-id="${x.id}"><span class="fam-ic">${ic(x.i, 20)}</span>${x.t}${ic('right', 16).replace('class="i"', 'class="i chev-r"')}</button></li>`).join('')}</ul>
     <div class="mega-subs" id="mega-panel" role="tabpanel"><h3>${f.t}</h3><ul>${f.subs.map(([s, t]) => `<li><a href="#/categoria/${s}">${t}</a></li>`).join('')}</ul><a class="link" href="#/categoria/${f.id}">Ver todo en ${f.t}${ic('right', 16)}</a></div>
     ${feat ? `<a class="mega-feat" href="${pHref(feat)}">${artOf(feat)}<small>Destacado</small><strong>${feat.name}</strong><span class="price">${cop(minPrice(feat))}</span></a>`
-      : `<div class="mega-feat"><span style="display:grid;place-items:center;aspect-ratio:4/3;background:#fff;border-radius:12px;color:var(--color-accent)">${ic(f.i, 64, 1.2)}</span><small>${f.t}</small><strong>Redes, cables, cámaras y memorias</strong></div>`}`;
+      : `<div class="mega-feat"><span style="display:grid;place-items:center;aspect-ratio:4/3;background:#fff;color:var(--color-accent)">${ic(f.i, 64, 1.2)}</span><small>${f.t}</small><strong>Redes, cables, cámaras y memorias</strong></div>`}`;
 }
 function renderMega(fid) { $('#mega-in').innerHTML = megaHTML(fid); }
 function toggleMega(open) {
