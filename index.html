@@ -1,0 +1,1997 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Prototipo navegable del rediseño de giftronic04.com: home, categoría, ficha de producto y plan de cambios.">
+<title>Rediseño Giftronic04</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* ============ Tokens ============ */
+:root{
+  color-scheme: light;
+  --ink:#0B0B0F; --ink-2:#16161C; --ink-3:#24242D; --ink-line:rgba(255,255,255,.1);
+  --text:#1A1A1A; --text-2:#374151; --muted:#6B7280; --muted-strong:#4B5563;
+  --bg:#F6F7F9; --surface:#FFFFFF; --line:#E6E8EC; --line-strong:#D3D7DE; --canvas:#E4E6EA;
+  --brand:#FF6B00; --brand-soft:#FF8A3D;
+  --accent:#D24410; --accent-hover:#B3380B; --accent-soft:#FFF1E8; --accent-line:#FFD7BD;
+  --ok:#0E7A3E; --ok-soft:#E8F6EE; --warn:#8A4B00; --warn-soft:#FFF4DB;
+  --r-sm:10px; --r:14px; --r-lg:20px; --r-xl:24px;
+  --shadow-1:0 1px 2px rgba(16,17,22,.06),0 1px 1px rgba(16,17,22,.04);
+  --shadow-2:0 18px 40px -18px rgba(16,17,22,.28),0 3px 8px rgba(16,17,22,.06);
+  --shadow-3:0 30px 80px -30px rgba(11,11,15,.5);
+  --font:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+
+/* ============ Base ============ */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;font-family:var(--font);font-size:16px;line-height:1.5;color:var(--text);background:var(--canvas);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;overflow:hidden}
+img,svg{max-width:100%}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,h4{margin:0;line-height:1.15;letter-spacing:-.02em;text-wrap:balance}
+p{margin:0}
+ul{margin:0;padding:0}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.hdr :focus-visible,.foot :focus-visible,.topbar :focus-visible,.dark :focus-visible{outline-color:var(--brand-soft)}
+.i{flex:none;display:inline-block;vertical-align:middle}
+.num{font-variant-numeric:tabular-nums}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--ink);color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;text-decoration:none}
+.skip:focus{top:12px}
+
+/* ============ Prototype chrome (not part of the store) ============ */
+.proto{flex:none;background:#fff;border-bottom:1px solid var(--line);padding-inline:16px;position:relative;z-index:60}
+.proto-in{display:flex;align-items:center;gap:14px;min-height:54px;max-width:1440px;margin-inline:auto}
+.proto-tag{flex:none;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);padding:3px 9px;border-radius:999px}
+.proto-name{font-size:14px;font-weight:800;white-space:nowrap}
+.proto-views{display:flex;gap:2px;background:var(--bg);padding:4px;border-radius:12px;overflow-x:auto;scrollbar-width:none;min-width:0}
+.proto-views::-webkit-scrollbar{display:none}
+.proto-views a{padding:7px 12px;border-radius:9px;font-size:13.5px;font-weight:700;color:var(--muted-strong);text-decoration:none;white-space:nowrap;transition:background-color .15s,color .15s}
+.proto-views a:hover{color:var(--text)}
+.proto-views a[aria-current="page"]{background:#fff;color:var(--text);box-shadow:var(--shadow-1)}
+.proto-note{font-size:12.5px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.proto-device{display:flex;gap:2px;background:var(--bg);padding:4px;border-radius:12px;flex:none}
+.proto-note + .proto-device{margin-left:0}
+.proto-device button{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;padding:7px 11px;border-radius:9px;font-size:13px;font-weight:700;color:var(--muted-strong)}
+.proto-device button[aria-pressed="true"]{background:#fff;color:var(--text);box-shadow:var(--shadow-1)}
+@media (max-width:1180px){.proto-note{display:none}.proto-device{margin-left:auto}}
+@media (max-width:720px){.proto-name,.proto-device{display:none}.proto-in{gap:10px}}
+
+/* ============ Stage + device frame ============ */
+.stage{flex:1;min-height:0;display:flex;justify-content:center;align-items:stretch}
+.device{container:shop/inline-size;position:relative;flex:1;min-width:0;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
+.viewport{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scroll-padding-top:140px}
+.stage.is-phone{align-items:center;padding:18px 16px;background:radial-gradient(900px 500px at 50% 0%,#F2F3F6 0%,rgba(242,243,246,0) 70%),var(--canvas)}
+.stage.is-phone .device{flex:none;width:410px;max-width:100%;height:min(864px,100%);border:10px solid #0B0B0F;border-radius:46px;box-shadow:var(--shadow-3)}
+.stage.is-phone .viewport{scrollbar-width:none}
+.stage.is-phone .viewport::-webkit-scrollbar{display:none}
+@media (max-width:720px){.stage.is-phone{padding:0;background:none}.stage.is-phone .device{flex:1;width:auto;height:auto;border:0;border-radius:0;box-shadow:none}}
+.wrap{max-width:1280px;margin-inline:auto;padding-inline:16px}
+@container shop (min-width:900px){.wrap{padding-inline:32px}}
+
+/* ============ Top bar ============ */
+.topbar{background:#000;color:#ECECF1;font-size:12.5px;font-weight:600}
+.topbar-list{list-style:none;display:grid;height:34px;align-items:center}
+.topbar-list li{grid-area:1/1;display:flex;align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity .45s var(--ease)}
+.topbar-list li.is-on{opacity:1}
+.topbar-list .i{color:var(--brand)}
+@container shop (min-width:760px){
+  .topbar-list{display:flex;justify-content:center;gap:0}
+  .topbar-list li{opacity:1}
+  .topbar-list li+li::before{content:"";width:4px;height:4px;border-radius:50%;background:#5A5A66;margin-inline:22px 14px}
+}
+
+/* ============ Header ============ */
+.hdr{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;box-shadow:0 1px 0 var(--ink-line)}
+.hdr-in{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"menu logo actions" "search search search";align-items:center;column-gap:6px;row-gap:10px;padding-block:8px 12px}
+.hdr-menu{grid-area:menu}
+.logo{grid-area:logo;display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:#fff;min-height:44px;justify-self:start}
+.logo-mark{width:34px;height:30px;flex:none}
+.logo-word{font-weight:800;font-size:17px;letter-spacing:.01em;line-height:1}
+.logo-word b{color:var(--brand);font-weight:800}
+.logo-word small{font-size:11px;font-weight:700;color:#A3A3AE;margin-left:1px;letter-spacing:.04em}
+.icon-btn{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;border:0;background:transparent;color:inherit;position:relative}
+.icon-btn:hover{background:rgba(255,255,255,.08)}
+.search{grid-area:search;position:relative;display:flex;align-items:center;background:#fff;border-radius:12px;height:46px;padding-left:14px;color:var(--text)}
+.search>.i{color:var(--muted)}
+.search input{flex:1;min-width:0;border:0;outline:0;background:transparent;height:100%;padding:0 10px;font-size:16px;font-weight:500}
+.search input::placeholder{color:#7A808B}
+.search input::-webkit-search-cancel-button{display:none}
+.search:focus-within{box-shadow:0 0 0 3px var(--brand-soft)}
+.search-btn{height:38px;margin-right:4px;border:0;border-radius:9px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;padding:0 14px;display:inline-flex;align-items:center;gap:6px}
+.search-btn:hover{background:var(--accent-hover)}
+.search-btn span{display:none}
+.suggest{position:absolute;left:0;right:0;top:calc(100% + 8px);background:#fff;border-radius:14px;box-shadow:var(--shadow-2);border:1px solid var(--line);padding:6px;z-index:30;max-height:420px;overflow:auto}
+.suggest a{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:12px;padding:6px 8px;border-radius:10px;text-decoration:none}
+.suggest a:hover,.suggest a:focus-visible{background:var(--bg)}
+.suggest .s-art{width:48px;height:48px;border-radius:8px;background:#fff;border:1px solid var(--line)}
+.suggest .s-name{font-size:14px;font-weight:600;line-height:1.3}
+.suggest .s-name small{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.suggest .s-price{font-weight:800;font-size:14px;color:var(--accent)}
+.suggest .s-empty{padding:14px;color:var(--muted);font-size:14px}
+.hdr-actions{grid-area:actions;display:flex;align-items:center;gap:2px}
+.hdr-act{display:inline-flex;align-items:center;gap:9px;min-height:44px;min-width:44px;justify-content:center;padding:0 8px;border-radius:12px;border:0;background:transparent;color:#fff;text-decoration:none;position:relative}
+.hdr-act:hover{background:rgba(255,255,255,.08)}
+.hdr-act .t{display:none;text-align:left;line-height:1.15;font-size:14px;font-weight:700}
+.hdr-act .t small{display:block;font-size:11.5px;font-weight:600;color:#A3A3AE}
+.cart-count{position:absolute;top:3px;left:24px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--brand);color:#0B0B0F;font-size:11px;font-weight:800;display:grid;place-items:center;line-height:1;transition:transform .2s var(--ease)}
+.cart-count.bump{transform:scale(1.25)}
+.hide-sm{display:none!important}
+@container shop (max-width:389px){.logo-word{font-size:15px}.logo-word small{display:none}.logo-mark{width:30px;height:27px}.hdr-in{column-gap:2px}}
+@container shop (min-width:900px){
+  .hdr-in{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"logo search actions";column-gap:28px;padding-block:14px}
+  .hdr-menu{display:none}
+  .logo-word{font-size:19px}
+  .search{height:48px}
+  .search-btn span{display:inline}
+  .hdr-act .t{display:block}
+  .hide-sm{display:inline-flex!important}
+  .cart-count{left:22px}
+}
+
+/* Category nav + mega menu */
+.catnav{display:none;border-top:1px solid var(--ink-line);position:relative}
+@container shop (min-width:900px){.catnav{display:block}}
+.catnav-in{display:flex;align-items:center;gap:4px;height:46px;overflow:hidden}
+.catnav-all{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px 0 10px;border-radius:9px;border:0;background:var(--brand);color:#0B0B0F;font-weight:800;font-size:14px;margin-right:10px}
+.catnav-all:hover{background:#FF7D1F}
+.catnav-all[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.chev{transition:transform .2s var(--ease)}
+.catnav-in a{font-size:14px;font-weight:600;color:#D7D7DF;text-decoration:none;padding:7px 11px;border-radius:8px;white-space:nowrap}
+.catnav-in a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.catnav-in a.deal{margin-left:auto;color:var(--brand-soft);display:inline-flex;gap:6px;align-items:center}
+.mega{position:absolute;left:0;right:0;top:100%;background:#fff;color:var(--text);border-top:1px solid var(--line);box-shadow:0 30px 60px -30px rgba(11,11,15,.35);z-index:25;animation:drop .22s var(--ease)}
+.mega-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 32px;padding-block:28px}
+@container shop (min-width:1180px){.mega-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.fam-h{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px;margin-bottom:10px;width:100%;background:none;border:0;padding:0;text-align:left;color:inherit;cursor:default}
+.fam-ic{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.fam ul{list-style:none;display:grid;gap:2px}
+.fam li a{display:block;padding:5px 0;font-size:14px;color:var(--muted-strong);text-decoration:none;font-weight:500}
+.fam li a:hover{color:var(--accent)}
+.mega-foot{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding-block:14px;border-top:1px solid var(--line);font-size:14px;color:var(--muted-strong)}
+.mega-foot a{font-weight:700;color:var(--accent);text-decoration:none;display:inline-flex;gap:6px;align-items:center}
+@keyframes drop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* ============ Buttons, chips, badges ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:12px;font-weight:700;font-size:15px;line-height:1.1;border:1.5px solid transparent;text-decoration:none;white-space:nowrap;transition:background-color .18s,border-color .18s,color .18s,transform .12s,box-shadow .18s;touch-action:manipulation}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-outline{background:#fff;border-color:var(--text);color:var(--text)}
+.btn-outline:hover{background:#F3F4F6}
+.btn-ghost{background:#fff;border-color:var(--line-strong);color:var(--text)}
+.btn-ghost:hover{border-color:var(--text)}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-dark:hover{background:var(--ink-3)}
+.btn-lg{min-height:54px;font-size:16px;border-radius:14px;padding:0 22px}
+.btn-block{width:100%}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.link{color:var(--accent);font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.link:hover{text-decoration:underline;text-underline-offset:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;list-style:none}
+.chips li{font-size:11.5px;font-weight:700;color:var(--text-2);background:var(--bg);border:1px solid var(--line);padding:2px 7px;border-radius:7px;line-height:1.45;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 8px;border-radius:7px;line-height:1.4;letter-spacing:.01em}
+.badge-off{background:var(--accent);color:#fff}
+.badge-dark{background:var(--ink);color:#fff}
+.badge-soft{background:#fff;color:var(--text);border:1px solid var(--line-strong)}
+.badge-warn{background:var(--warn-soft);color:var(--warn);border:1px solid #F5DDA6}
+.badge-out{background:#4B5563;color:#fff}
+.pay{display:flex;flex-wrap:wrap;gap:6px;list-style:none}
+.pay li{font-size:12px;font-weight:800;letter-spacing:.01em;padding:5px 10px;border-radius:8px;background:#fff;border:1px solid var(--line-strong);color:var(--text)}
+.pay.dark li{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);color:#F2F2F6}
+
+/* ============ Home ============ */
+.hero{padding-block:16px 4px}
+.hero-card{display:grid;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-xl);overflow:hidden}
+.hero-copy{padding:26px 20px 22px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:800;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);padding:4px 10px;border-radius:999px}
+.hero h1{font-size:30px;font-size:clamp(29px,6.2cqi,54px);font-weight:800;line-height:1.04;letter-spacing:-.035em;max-width:15ch}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero-sub{font-size:16px;color:var(--muted-strong);max-width:46ch}
+.hero-cta{display:flex;flex-wrap:wrap;gap:10px;width:100%}
+.hero-cta .btn{flex:1 1 180px}
+.ticks{display:flex;flex-wrap:wrap;gap:6px 16px;list-style:none;font-size:13px;font-weight:700;color:var(--text-2)}
+.ticks li{display:inline-flex;align-items:center;gap:6px}
+.ticks .i{color:var(--ok)}
+.hero-stage{position:relative;min-height:320px;background:radial-gradient(60% 55% at 58% 42%,#FFF0E4 0%,rgba(255,240,228,0) 72%),linear-gradient(180deg,#F8F9FA,#EEF0F3);display:grid;place-items:center;padding:12px 12px 96px}
+.hero-stage .art{width:min(100%,460px);height:auto}
+.hero-tag{position:absolute;left:12px;right:12px;bottom:12px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 14px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow-2);text-decoration:none;color:var(--text)}
+.hero-tag .k{grid-column:1/-1;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero-tag .n{font-weight:800;font-size:14.5px;line-height:1.25}
+.hero-tag .p{font-weight:800;font-size:22px;color:var(--accent);letter-spacing:-.02em;text-align:right;line-height:1}
+.hero-tag .f{font-size:12.5px;color:var(--muted-strong)}
+.hero-tag .f b{color:var(--text)}
+.hero-tag .o{justify-self:end}
+@container shop (min-width:900px){
+  .hero{padding-block:28px 8px}
+  .hero-card{grid-template-columns:1.02fr 1fr}
+  .hero-copy{padding:56px 52px;justify-content:center;gap:18px}
+  .hero-sub{font-size:17.5px}
+  .hero-cta .btn{flex:0 0 auto}
+  .hero-stage{min-height:480px;padding:28px 28px 110px}
+  .hero-tag{left:auto;right:24px;bottom:24px;width:340px}
+}
+
+.trust{padding-block:14px 0}
+.trust-list{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg)}
+.trust-list li{display:flex;gap:11px;align-items:flex-start;padding:14px 12px}
+.trust-list li:nth-child(odd){border-right:1px solid var(--line)}
+.trust-list li:nth-child(-n+2){border-bottom:1px solid var(--line)}
+.trust-ic{width:38px;height:38px;border-radius:10px;background:var(--bg);display:grid;place-items:center;color:var(--accent);flex:none}
+.trust-list strong{display:block;font-size:14px;line-height:1.25}
+.trust-list span{font-size:12.5px;color:var(--muted);line-height:1.35;display:block;margin-top:2px}
+@container shop (min-width:900px){
+  .trust-list{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .trust-list li{padding:18px 20px}
+  .trust-list li:nth-child(-n+2){border-bottom:0}
+  .trust-list li:not(:last-child){border-right:1px solid var(--line)}
+  .trust-list strong{font-size:15px}
+}
+
+.sec{padding-block:40px 0}
+.sec-h{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px}
+.sec-h h2{font-size:22px;font-weight:800;letter-spacing:-.025em}
+.sec-h p{font-size:14.5px;color:var(--muted-strong);margin-top:5px}
+.sec-h .link{flex:none;font-size:14px}
+@container shop (min-width:900px){.sec{padding-block:56px 0}.sec-h h2{font-size:28px}.sec-h p{font-size:15.5px}}
+
+.tiles{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile a{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px 6px 12px;text-decoration:none;text-align:center;font-size:13px;font-weight:700;line-height:1.2;height:100%;transition:transform .2s var(--ease),box-shadow .2s,border-color .2s}
+.tile .art{width:100%;aspect-ratio:1/1;height:auto;transition:transform .3s var(--ease)}
+@media (hover:hover){.tile a:hover{transform:translateY(-3px);box-shadow:var(--shadow-2);border-color:transparent}.tile a:hover .art{transform:scale(1.05)}}
+@container shop (min-width:640px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@container shop (min-width:1000px){.tiles{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}.tile a{font-size:14px}}
+
+/* Rails */
+.rail{position:relative}
+.rail-track{display:grid;grid-auto-flow:column;grid-auto-columns:46%;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:16px;padding:4px 16px 14px;margin-inline:-16px;scrollbar-width:none;overscroll-behavior-x:contain}
+.rail-track::-webkit-scrollbar{display:none}
+.rail-btn{display:none}
+@container shop (min-width:640px){.rail-track{grid-auto-columns:31%}}
+@container shop (min-width:900px){
+  .rail-track{grid-auto-columns:calc((100% - 48px)/4);gap:16px;margin-inline:0;padding-inline:0;scroll-padding-inline:0}
+  .rail-btn{display:grid;place-items:center;position:absolute;top:30%;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow-2);z-index:3;color:var(--text);transition:opacity .2s}
+  .rail-btn.prev{left:-20px}.rail-btn.next{right:-20px}
+  .rail-btn[disabled]{opacity:0;pointer-events:none}
+}
+.split{display:grid;gap:40px}
+@container shop (min-width:900px){.split{grid-template-columns:1fr 1fr;gap:32px}}
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@container shop (min-width:900px){.duo{gap:16px}}
+
+/* Payment band */
+.payband{margin-top:56px;background:var(--ink);color:#fff;border-radius:var(--r-xl);padding:28px 20px;display:grid;gap:24px;position:relative;overflow:hidden}
+.payband::after{content:"";position:absolute;right:-120px;top:-160px;width:420px;height:420px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,107,0,.28),rgba(255,107,0,0));pointer-events:none}
+.payband h2{font-size:26px;font-size:clamp(24px,4.2cqi,38px);font-weight:800;letter-spacing:-.03em;max-width:17ch}
+.payband h2 em{font-style:normal;color:var(--brand)}
+.payband p{color:#C9C9D2;margin-top:10px;max-width:48ch;font-size:15px}
+.pay-groups{display:grid;gap:18px;position:relative;z-index:1}
+.pay-g h3{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#A3A3AE;margin-bottom:9px}
+.fin-list{list-style:none;display:grid;gap:8px}
+.fin-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 14px;font-weight:800}
+.fin-list li span{font-weight:600;font-size:13.5px;color:#D7D7DF}
+@container shop (min-width:900px){.payband{grid-template-columns:1.1fr 1fr;padding:48px 52px;align-items:center;gap:48px}}
+
+/* ============ Product card ============ */
+.card{position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;min-width:0;scroll-snap-align:start;transition:transform .22s var(--ease),box-shadow .22s,border-color .22s}
+@media (hover:hover){.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-2);border-color:transparent}.card:hover .card-media .art{transform:scale(1.05)}}
+.card-media{position:relative;display:block;aspect-ratio:1/1;background:#fff;overflow:hidden}
+.card-media .art{position:absolute;inset:0;width:100%;height:100%;transition:transform .4s var(--ease),opacity .35s}
+.sk{position:absolute;inset:12px;border-radius:12px;background:linear-gradient(100deg,#F1F2F4 30%,#E6E8EC 45%,#F1F2F4 60%);background-size:300% 100%;animation:sk 1.3s linear infinite;opacity:0;transition:opacity .3s;pointer-events:none}
+.is-loading .sk{opacity:1}
+.is-loading .art{opacity:0}
+@keyframes sk{from{background-position:100% 0}to{background-position:-50% 0}}
+.card-badges{position:absolute;top:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:5px;z-index:1}
+.card-body{display:flex;flex-direction:column;gap:7px;padding:10px 12px 12px;flex:1}
+.card-brand{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.card-title{font-size:14.5px;font-weight:700;line-height:1.3;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em}
+.card-title a{text-decoration:none}
+.card-title a::after{content:"";position:absolute;inset:0;z-index:0}
+.card .chips li:nth-child(n+4){display:none}
+.card-price{margin-top:auto;padding-top:4px;display:grid;gap:1px}
+.was{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.now{font-size:19px;font-weight:800;letter-spacing:-.025em;color:var(--accent);line-height:1.2;font-variant-numeric:tabular-nums}
+.now.plain{color:var(--text)}
+.fin{font-size:12px;color:var(--muted-strong);line-height:1.35}
+.fin b{color:var(--text);font-weight:800}
+.card-actions{display:flex;gap:6px;position:relative;z-index:2;margin-top:6px}
+.card-actions .btn{flex:1;padding:0 10px;font-size:14px}
+.sq{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:12px;border:1.5px solid var(--line-strong);background:#fff;color:var(--text);text-decoration:none;transition:border-color .15s}
+.sq:hover{border-color:var(--text)}
+.card.is-out .card-media .art{filter:grayscale(1);opacity:.45}
+.card.is-out .now{color:var(--muted-strong)}
+.card.is-out .card-brand,.card.is-out .card-title,.card.is-out .chips{opacity:.7}
+.out-flag{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.95);border:1px solid var(--line-strong);border-radius:10px;padding:6px 12px;font-size:13px;font-weight:800;color:var(--text-2);white-space:nowrap}
+@container shop (min-width:900px){
+  .card-body{padding:12px 16px 16px;gap:8px}
+  .card-title{font-size:15.5px}
+  .now{font-size:22px}
+  .fin{font-size:12.5px}
+  .card .chips li:nth-child(n+4){display:inline-block}
+  .chips li{font-size:12px}
+}
+
+/* ============ Category page ============ */
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;list-style:none;margin:0;padding-inline:0;font-size:13px;color:var(--muted);padding-block:16px 4px}
+.crumbs a{text-decoration:none;color:var(--muted-strong);font-weight:600}
+.crumbs a:hover{color:var(--accent)}
+.crumbs [aria-current]{color:var(--text);font-weight:700}
+.crumbs .i{color:#A1A6B0}
+.cat-head{padding-block:6px 20px;display:grid;gap:10px}
+.cat-head h1{font-size:30px;font-weight:800;letter-spacing:-.035em}
+.cat-head p{color:var(--muted-strong);max-width:72ch;font-size:15px}
+.usechips{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.usechip{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line-strong);background:#fff;font-weight:700;font-size:14px}
+.usechip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.cat-layout{display:grid;gap:24px;padding-bottom:24px}
+.filters{display:none}
+@container shop (min-width:900px){
+  .cat-head h1{font-size:40px}
+  .cat-layout{grid-template-columns:250px minmax(0,1fr);gap:32px;align-items:start}
+  .filters{display:block;position:sticky;top:148px;max-height:calc(100cqh - 160px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:6px 18px 14px}
+}
+.fgroup{border-bottom:1px solid var(--line)}
+.fgroup:last-child{border-bottom:0}
+.fgroup summary{list-style:none;display:flex;align-items:center;justify-content:space-between;padding:14px 0;font-weight:800;font-size:14.5px;cursor:pointer}
+.fgroup summary::-webkit-details-marker{display:none}
+.fgroup[open] summary .chev{transform:rotate(180deg)}
+.fopts{display:grid;gap:2px;padding-bottom:12px}
+.fopt{display:flex;align-items:center;gap:10px;min-height:36px;font-size:14px;font-weight:500;cursor:pointer;border-radius:8px}
+.fopt input{appearance:none;width:20px;height:20px;border:1.5px solid #9CA3AF;border-radius:6px;display:grid;place-items:center;margin:0;flex:none;background:#fff;transition:background-color .15s,border-color .15s}
+.fopt input:checked{background:var(--ink);border-color:var(--ink);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");background-size:14px;background-position:center;background-repeat:no-repeat}
+.fopt input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.fopt .c{margin-left:auto;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.toolbar .count{font-size:14px;color:var(--muted-strong);font-weight:600;margin-right:auto}
+.toolbar .count b{color:var(--text)}
+.sort{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted-strong)}
+.sort select{min-height:44px;border-radius:12px;border:1.5px solid var(--line-strong);background:#fff;padding:0 36px 0 12px;font-weight:700;color:var(--text);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231A1A1A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:18px}
+.filter-btn{display:inline-flex}
+@container shop (min-width:900px){.filter-btn{display:none}.sort-l{display:inline}}
+.sort-l{display:none}
+.active-f{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.active-f button{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 10px 0 12px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;font-size:13px;font-weight:700}
+.active-f button:hover{border-color:var(--text)}
+.active-f .clear{border:0;background:transparent;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@container shop (min-width:640px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container shop (min-width:900px){.grid{gap:16px}}
+@container shop (min-width:1180px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;background:#fff;border:1px dashed var(--line-strong);border-radius:var(--r-lg);display:grid;gap:10px;justify-items:center}
+.empty strong{font-size:17px}
+.empty p{color:var(--muted-strong);font-size:14.5px}
+
+/* ============ Product page ============ */
+.pdp-top{display:grid;gap:22px;grid-template-areas:"gal" "buy" "calc";padding-bottom:12px}
+.gal{grid-area:gal;min-width:0}.buy{grid-area:buy;min-width:0}.calc{grid-area:calc;min-width:0}
+@container shop (min-width:960px){
+  .pdp-top{grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr);grid-template-areas:"gal buy" "calc buy";column-gap:48px;row-gap:24px;align-items:start}
+}
+.gal-main{position:relative;aspect-ratio:1/1;background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.gal-stage{position:absolute;inset:0;display:grid;place-items:center}
+.gal-stage .art{width:100%;height:100%;transition:transform .25s var(--ease)}
+.gal-main.zoomable{cursor:zoom-in}
+.gal-main.is-zoom .gal-stage .art{transform:scale(2.1)}
+.gal-count{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;z-index:2}
+.gal-kind{position:absolute;left:12px;top:12px;z-index:2}
+.gal-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.95);display:grid;place-items:center;z-index:2;box-shadow:var(--shadow-1)}
+.gal-arrow.prev{left:10px}.gal-arrow.next{right:10px}
+.gal-hint{position:absolute;right:12px;bottom:12px;z-index:2;font-size:12px;font-weight:700;color:var(--muted-strong);background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:4px 10px;display:none;align-items:center;gap:5px}
+@media (hover:hover) and (pointer:fine){.gal-hint{display:inline-flex}}
+.thumbs{display:flex;gap:8px;overflow-x:auto;padding:10px 2px 4px;scrollbar-width:thin}
+.thumb{position:relative;flex:none;width:66px;height:66px;border-radius:12px;border:1.5px solid var(--line);background:#fff;padding:3px;overflow:hidden;display:grid;place-items:center}
+.thumb .art{width:100%;height:100%}
+.thumb[aria-current="true"]{border-color:var(--text);box-shadow:0 0 0 1px var(--text)}
+.thumb .info-art{position:absolute;left:50%;top:50%;width:260px;height:260px;transform:translate(-50%,-50%) scale(.235);border-radius:36px;pointer-events:none}
+.info-art{width:100%;height:100%;background:radial-gradient(70% 60% at 80% 10%,rgba(255,107,0,.35),rgba(255,107,0,0) 70%),var(--ink);color:#fff;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;padding:9%;text-align:left}
+.info-art .k{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--brand-soft)}
+.info-art .ic{width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.08);display:grid;place-items:center;color:var(--brand);margin-bottom:auto}
+.info-art strong{font-size:clamp(20px,5cqi,34px);line-height:1.05;letter-spacing:-.03em;font-weight:800;max-width:14ch}
+.info-art ul{list-style:none;display:grid;gap:4px;font-size:14px;color:#D2D2DA;font-weight:600}
+.info-art li::before{content:"— ";color:var(--brand)}
+
+.pdp-brand{font-size:14px;font-weight:700;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.pdp-brand b{color:var(--muted-strong);font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+.pdp-model{font-size:26px;font-size:clamp(25px,4.6cqi,38px);font-weight:800;letter-spacing:-.035em;line-height:1.05;margin-top:6px;overflow-wrap:anywhere}
+.pdp-type{font-size:16px;color:var(--text-2);font-weight:600;margin-top:8px}
+.rating{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;font-weight:700;text-decoration:none;min-height:32px}
+.stars{display:inline-flex;gap:1px;color:#F2A20C}
+.rating>span:last-child{color:var(--muted-strong);text-decoration:underline;text-underline-offset:3px}
+.pricebox{margin-top:18px;border:1px solid var(--line);border-radius:var(--r-lg);background:#fff;padding:16px;display:grid;gap:12px}
+.p-was{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-size:14.5px;color:var(--muted)}
+.p-save{font-weight:800;color:var(--ok);background:var(--ok-soft);border-radius:7px;padding:2px 8px;font-size:13px}
+.p-cash{display:flex;flex-wrap:wrap;align-items:flex-end;gap:4px 14px}
+.p-cash .v{font-size:40px;font-size:clamp(36px,6.4cqi,48px);font-weight:800;letter-spacing:-.04em;line-height:.95;color:var(--accent);font-variant-numeric:tabular-nums}
+.p-cash .l{font-size:13px;line-height:1.3;color:var(--muted-strong);font-weight:600;padding-bottom:3px}
+.p-cash .l b{display:block;color:var(--text);font-size:14px}
+.p-fin{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding-top:12px;border-top:1px dashed var(--line-strong)}
+.p-fin .v{font-size:22px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.p-fin .l{font-size:14px;color:var(--text-2);font-weight:600}
+.p-fin .ex{font-size:11.5px;font-weight:800;color:var(--warn);background:var(--warn-soft);border-radius:6px;padding:1px 6px;letter-spacing:.02em}
+.p-cuotas{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.45}
+.p-cuotas .i{color:var(--accent);margin-top:2px}
+.p-cuotas a{white-space:nowrap}
+.stock{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:14.5px;font-weight:700;color:var(--ok)}
+.stock .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px var(--ok-soft)}
+.stock span{color:var(--muted-strong);font-weight:600}
+.iboxes{display:grid;gap:10px;margin-top:14px}
+.ibox{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start;padding:13px 14px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.ibox .ic{width:40px;height:40px;border-radius:11px;background:var(--bg);display:grid;place-items:center;color:var(--text)}
+.ibox strong{font-size:14.5px;display:block}
+.ibox strong em{font-style:normal;color:var(--ok)}
+.ibox p{font-size:13.5px;color:var(--muted-strong);line-height:1.45;margin-top:2px}
+.buy-actions{display:grid;gap:10px;margin-top:16px}
+.wa-btn .i{color:var(--ok)}
+.sold{font-size:13px;color:var(--muted);margin-top:12px;display:flex;gap:6px;align-items:center}
+.sold b{color:var(--text-2)}
+.payrow{margin-top:14px;display:grid;gap:8px}
+.payrow>span{font-size:12.5px;font-weight:700;color:var(--muted)}
+
+/* Installment calculator */
+.calc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;display:grid;gap:14px}
+.calc-h{display:flex;align-items:center;gap:10px}
+.calc-h .ic{width:40px;height:40px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.calc-h h2{font-size:19px;font-weight:800}
+.calc-h p{font-size:13px;color:var(--muted);margin-top:2px}
+.step{font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-strong)}
+.opts{display:grid;gap:8px;border:0;margin:0;padding:0;min-width:0}
+.opts legend{padding:0;margin-bottom:8px}
+.fin-opts{grid-template-columns:repeat(3,minmax(0,1fr))}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.opt>span{display:flex;flex-direction:column;justify-content:center;gap:1px;min-height:58px;padding:8px 10px;border:1.5px solid var(--line-strong);border-radius:12px;background:#fff;font-weight:800;font-size:14.5px;line-height:1.2;transition:border-color .15s,background-color .15s}
+.opt span small{font-size:12px;font-weight:600;color:var(--muted)}
+.opt input:checked+span{border-color:var(--ink);background:#FAFAFB;box-shadow:0 0 0 1px var(--ink)}
+.opt input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.n-opts{display:flex;flex-wrap:wrap;gap:8px}
+.n-opts .opt>span{min-height:44px;min-width:52px;align-items:center;padding:0 12px}
+.calc-out{display:grid;gap:2px;background:var(--ink);color:#fff;border-radius:14px;padding:16px 18px}
+.calc-out .l{font-size:13px;color:#BDBDC7;font-weight:600}
+.calc-out .v{font-size:34px;font-weight:800;letter-spacing:-.035em;line-height:1.1;font-variant-numeric:tabular-nums}
+.calc-out .v small{font-size:16px;font-weight:700;color:#D7D7DF;letter-spacing:0}
+.calc-out .t{font-size:13px;color:#BDBDC7}
+.calc-note{display:flex;gap:8px;font-size:12.5px;color:var(--muted-strong);line-height:1.45}
+.calc-note .i{color:var(--muted);margin-top:1px}
+
+/* Product sections */
+.psec{padding-block:36px;border-top:1px solid var(--line)}
+.psec>h2,.psec-h h2{font-size:22px;font-weight:800;letter-spacing:-.025em}
+.psec-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px 16px;margin-bottom:18px}
+.psec-h p{font-size:14px;color:var(--muted-strong);margin-top:4px}
+@container shop (min-width:900px){.psec{padding-block:48px}.psec>h2,.psec-h h2{font-size:28px}}
+.inbox{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.inbox li{display:grid;justify-items:center;text-align:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 10px;font-size:14px;font-weight:700;line-height:1.3}
+.inbox .ic{width:52px;height:52px;border-radius:14px;background:var(--bg);display:grid;place-items:center}
+.inbox small{display:block;font-weight:600;color:var(--muted);font-size:12.5px;margin-top:2px}
+@container shop (min-width:640px){.inbox{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container shop (min-width:1100px){.inbox{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.specs6{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.specs6 li{background:#fff;padding:16px 14px;display:grid;gap:6px;align-content:start}
+.specs6 .ic{color:var(--accent)}
+.specs6 span{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.specs6 strong{font-size:15px;line-height:1.3}
+@container shop (min-width:640px){.specs6{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container shop (min-width:1100px){.specs6{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.acc{margin-top:18px;display:grid;gap:10px}
+.acc details{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.acc summary{list-style:none;display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer;font-weight:800;font-size:15.5px;min-height:56px}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary .chev{margin-left:auto}
+.acc details[open] summary .chev{transform:rotate(180deg)}
+.acc summary small{font-weight:600;color:var(--muted);font-size:13px}
+.spec-table{width:100%;border-collapse:collapse;font-size:14.5px}
+.spec-table th,.spec-table td{text-align:left;padding:11px 18px;border-top:1px solid var(--line);vertical-align:top}
+.spec-table th{width:42%;color:var(--muted-strong);font-weight:600}
+.spec-table td{font-weight:700}
+.spec-table tr:nth-child(even){background:#FAFAFB}
+.benefits{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.benefits li{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:8px;align-content:start}
+.benefits .ic{width:40px;height:40px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.benefits strong{font-size:15px;line-height:1.25}
+.benefits p{font-size:13.5px;color:var(--muted-strong);line-height:1.45}
+@container shop (min-width:1000px){.benefits{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.benefits li{padding:20px}}
+.video{position:relative;aspect-ratio:16/9;border-radius:var(--r-lg);overflow:hidden;background:radial-gradient(60% 80% at 70% 30%,rgba(80,110,255,.35),rgba(80,110,255,0) 70%),radial-gradient(50% 60% at 20% 90%,rgba(255,107,0,.25),rgba(255,107,0,0) 70%),#0E0F14;display:grid;place-items:center;color:#fff;border:0;width:100%;padding:0}
+.video .play{width:76px;height:76px;border-radius:50%;background:#fff;color:var(--ink);display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:transform .2s var(--ease)}
+.video:hover .play{transform:scale(1.06)}
+.video .cap{position:absolute;left:16px;bottom:14px;right:16px;display:flex;justify-content:space-between;gap:10px;font-size:13.5px;font-weight:700;text-align:left}
+.video .cap span{color:#C9C9D2;font-weight:600}
+.video-msg{padding:24px;max-width:46ch;text-align:center;display:grid;gap:8px;justify-items:center;font-size:15px}
+.video-msg p{color:#C9C9D2;font-size:14px}
+.faq details{border-bottom:1px solid var(--line)}
+.faq details:first-child{border-top:1px solid var(--line)}
+.faq summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 2px;font-weight:700;font-size:15.5px;cursor:pointer;min-height:56px}
+.faq summary::-webkit-details-marker{display:none}
+.faq details[open] summary .chev{transform:rotate(180deg)}
+.faq details p{padding:0 2px 18px;color:var(--muted-strong);font-size:15px;max-width:72ch}
+.reviews{display:grid;gap:16px}
+@container shop (min-width:900px){.reviews{grid-template-columns:300px 1fr;gap:32px;align-items:start}}
+.rv-sum{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;display:grid;gap:12px}
+.rv-big{display:flex;align-items:center;gap:12px}
+.rv-big strong{font-size:44px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.rv-big small{display:block;font-size:13px;color:var(--muted);font-weight:600}
+.bars{list-style:none;display:grid;gap:6px;font-size:13px;font-weight:700}
+.bars li{display:grid;grid-template-columns:28px 1fr 20px;align-items:center;gap:8px;color:var(--muted-strong)}
+.bars .bar{height:8px;border-radius:99px;background:var(--bg);overflow:hidden}
+.bars .bar i{display:block;height:100%;background:#F2A20C;border-radius:99px}
+.rv{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;display:grid;gap:10px}
+.rv-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.rv-top b{font-size:15px}
+.verified{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--ok)}
+.rv p{color:var(--text-2);font-size:15px}
+.rv .ph{color:var(--muted);font-style:italic}
+.complete{list-style:none;display:grid;gap:10px}
+@container shop (min-width:700px){.complete{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+.complete a{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;text-decoration:none;transition:border-color .15s,box-shadow .2s}
+.complete a:hover{border-color:transparent;box-shadow:var(--shadow-2)}
+.complete .ic{width:48px;height:48px;border-radius:12px;background:var(--bg);display:grid;place-items:center;flex:none}
+.complete strong{display:block;font-size:15px}
+.complete span{font-size:13px;color:var(--muted-strong)}
+.complete .chev-r{margin-left:auto;color:var(--muted)}
+.buybar{position:sticky;bottom:0;z-index:15;display:flex;align-items:center;gap:12px;margin-top:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -10px 30px -18px rgba(11,11,15,.3)}
+.buybar .bb-p{display:grid;line-height:1.15;margin-right:auto}
+.buybar .bb-p strong{font-size:20px;font-weight:800;color:var(--accent);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.buybar .bb-p span{font-size:12px;color:var(--muted-strong);font-weight:600}
+.buybar .btn{min-width:150px}
+@container shop (min-width:960px){.buybar{display:none}}
+
+/* ============ Footer ============ */
+.foot{background:var(--ink);color:#C9C9D2;margin-top:56px;font-size:14px}
+.foot-grid{display:grid;gap:28px;padding-block:40px 28px}
+@container shop (min-width:900px){.foot-grid{grid-template-columns:1.3fr 1fr 1fr 1fr;gap:40px;padding-block:56px 36px}}
+.foot h3{font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;margin-bottom:12px}
+.foot ul{list-style:none;display:grid;gap:2px}
+.foot li a{display:inline-block;padding:5px 0;color:#C9C9D2;text-decoration:none}
+.foot li a:hover{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.foot .about{display:grid;gap:14px;align-content:start}
+.foot .about p{max-width:36ch}
+.contact{display:grid;gap:8px}
+.contact a,.contact span{display:inline-flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-weight:700;min-height:28px}
+.contact .i{color:var(--brand)}
+.contact small{color:#A3A3AE;font-weight:600}
+.foot-pay{border-top:1px solid var(--ink-line);padding-block:20px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.foot-pay>span{font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#A3A3AE}
+.foot-legal{border-top:1px solid var(--ink-line);padding-block:18px 28px;display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between;font-size:12.5px;color:#A3A3AE}
+.foot-legal a{color:#fff;font-weight:700}
+.sic{display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px 12px;text-decoration:none;color:#fff!important;font-weight:700}
+
+/* ============ Layers (drawers, toast) ============ */
+.layer{position:absolute;inset:0;z-index:40;display:flex}
+.layer.right{justify-content:flex-end}
+.scrim{position:absolute;inset:0;background:rgba(11,11,15,.52);animation:fade .2s ease-out}
+.sheet{position:relative;background:#fff;width:min(420px,90%);height:100%;display:flex;flex-direction:column;animation:slideL .26s var(--ease);box-shadow:var(--shadow-3)}
+.layer.right .sheet{animation-name:slideR}
+.sheet-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 10px 18px;border-bottom:1px solid var(--line)}
+.sheet-h h2{font-size:18px;font-weight:800}
+.sheet-h .icon-btn:hover{background:var(--bg)}
+.sheet-b{flex:1;overflow-y:auto;padding:8px 18px 18px}
+.sheet-f{border-top:1px solid var(--line);padding:14px 18px calc(14px + env(safe-area-inset-bottom,0px));display:grid;gap:10px;background:#fff}
+@keyframes fade{from{opacity:0}}
+@keyframes slideL{from{transform:translateX(-100%)}}
+@keyframes slideR{from{transform:translateX(100%)}}
+.mfam{border-bottom:1px solid var(--line)}
+.mfam .fam-h{cursor:pointer;min-height:60px;margin:0}
+.mfam .fam-h .chev{margin-left:auto}
+.mfam .fam-h[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.mfam ul{list-style:none;padding:0 0 12px 48px;display:grid}
+.mfam li a{display:flex;align-items:center;min-height:42px;text-decoration:none;font-weight:600;color:var(--text-2)}
+.m-quick{display:grid;gap:8px;padding-top:16px}
+.cart-empty{text-align:center;color:var(--muted-strong);padding:40px 10px;display:grid;gap:10px;justify-items:center}
+.citem{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.citem .c-art{width:64px;height:64px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.citem .c-art .art{width:100%;height:100%}
+.citem strong{font-size:14px;line-height:1.3;display:block}
+.citem small{color:var(--muted);font-weight:600;font-size:12.5px}
+.citem .c-p{font-weight:800;font-size:15px;text-align:right;font-variant-numeric:tabular-nums}
+.citem .rm{border:0;background:none;color:var(--muted-strong);font-size:12.5px;font-weight:700;text-decoration:underline;padding:6px 0;min-height:32px}
+.totals{display:grid;gap:6px;font-size:14.5px}
+.totals div{display:flex;justify-content:space-between;gap:10px}
+.totals .grand{font-size:18px;font-weight:800}
+.totals .free{color:var(--ok);font-weight:800}
+.totals .fin-t{font-size:13px;color:var(--muted-strong)}
+.toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;background:var(--ink);color:#fff;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-3);width:max-content;max-width:calc(100% - 32px);animation:toast .3s var(--ease)}
+.toast .i{color:var(--brand)}
+@keyframes toast{from{opacity:0;transform:translate(-50%,10px)}}
+
+/* ============ Plan document ============ */
+.doc{flex:1;min-height:0;overflow-y:auto;background:var(--bg)}
+.doc-in{max-width:900px;margin-inline:auto;padding:36px 16px 80px}
+.doc-hero{display:grid;gap:12px;padding-bottom:28px;border-bottom:1px solid var(--line)}
+.doc-hero h1{font-size:clamp(30px,5vw,46px);font-weight:800;letter-spacing:-.04em;line-height:1.02}
+.doc-hero p{font-size:17px;color:var(--muted-strong);max-width:62ch}
+.howto{display:grid;gap:8px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;font-size:14.5px}
+.howto strong{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.howto ul{list-style:none;display:grid;gap:6px}
+.howto li{display:flex;gap:8px}
+.howto li .i{color:var(--accent);margin-top:2px}
+.doc h2{font-size:26px;font-weight:800;letter-spacing:-.03em;margin:44px 0 6px}
+.doc h2+p{color:var(--muted-strong);margin-bottom:18px;max-width:66ch}
+.tier{display:flex;align-items:center;gap:10px;margin:28px 0 12px;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-strong)}
+.tier::after{content:"";flex:1;height:1px;background:var(--line-strong)}
+.tasks{list-style:none;display:grid;gap:10px;counter-reset:t}
+.task{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px 16px 58px;position:relative;counter-increment:t}
+.task::before{content:counter(t);position:absolute;left:16px;top:15px;width:28px;height:28px;border-radius:9px;background:var(--ink);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.task h3{font-size:16.5px;font-weight:800;letter-spacing:-.015em;line-height:1.3}
+.task p{font-size:14.5px;color:var(--text-2);margin-top:6px;line-height:1.55}
+.task p b{color:var(--text)}
+.task .how{color:var(--muted-strong)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--line);color:var(--muted-strong)}
+.tag.hi{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+.code{margin-top:10px;background:var(--ink);color:#E6E6EE;border-radius:12px;padding:14px 16px;overflow-x:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre}
+.law{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px;display:grid;gap:14px}
+.law ol{margin:0;padding-left:20px;display:grid;gap:10px;font-size:15px;color:var(--text-2)}
+.law ol b{color:var(--text)}
+.compare{display:grid;gap:10px;margin-top:4px}
+@media (min-width:700px){.compare{grid-template-columns:1fr 1fr}}
+.cmp{border-radius:14px;padding:14px 16px;border:1px solid var(--line);background:#FAFAFB;font-size:14px}
+.cmp.good{background:var(--ok-soft);border-color:#BFE5CE}
+.cmp strong{display:block;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.cmp.good strong{color:var(--ok)}
+.cmp .x{color:var(--muted-strong)}
+.confirm{list-style:none;display:grid;gap:8px;font-size:14.5px}
+.confirm li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+.confirm .i{color:var(--warn);margin-top:2px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .sk{animation:none}
+}
+.hero-art{width:min(100%,480px)}
+.hero-art .art{width:100%;height:auto;display:block}
+.card-badges{pointer-events:none}
+.stars .i{margin:0}
+@container shop (max-width:959px){.toast{bottom:92px}}
+.doc code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#ECEEF2;padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-skip>Saltar al contenido</a>
+
+<div class="proto">
+  <div class="proto-in">
+    <span class="proto-tag">Borrador</span>
+    <span class="proto-name">Rediseño giftronic04.com</span>
+    <nav class="proto-views" aria-label="Vistas del prototipo">
+      <a href="#inicio" data-go="inicio">Home</a>
+      <a href="#categoria" data-go="categoria">Categoría</a>
+      <a href="#producto" data-go="producto">Producto</a>
+      <a href="#plan" data-go="plan">Plan de cambios</a>
+    </nav>
+    <span class="proto-note">Envío, stock, cuotas y horario: datos de ejemplo</span>
+    <div class="proto-device" role="group" aria-label="Tamaño de pantalla">
+      <button type="button" data-device="desktop" aria-pressed="true"><i data-i="monitor" data-s="16"></i>Escritorio</button>
+      <button type="button" data-device="phone" aria-pressed="false"><i data-i="smartphone" data-s="16"></i>Móvil</button>
+    </div>
+  </div>
+</div>
+
+<div class="stage" id="stage">
+  <div class="device" id="device">
+    <div class="viewport" id="viewport">
+
+      <div class="topbar">
+        <div class="wrap">
+          <ul class="topbar-list" id="topbar">
+            <li class="is-on"><i data-i="truck" data-s="16"></i>Envío gratis a todo Colombia</li>
+            <li><i data-i="card" data-s="16"></i>Paga hasta en 36 cuotas</li>
+            <li><i data-i="receipt" data-s="16"></i>Factura electrónica</li>
+          </ul>
+        </div>
+      </div>
+
+      <header class="hdr">
+        <div class="wrap hdr-in">
+          <button type="button" class="icon-btn hdr-menu" data-open="menu" aria-label="Abrir categorías"><i data-i="menu" data-s="24"></i></button>
+          <a class="logo" href="#inicio" data-go="inicio" aria-label="Giftronic04.com, ir al inicio">
+            <svg class="logo-mark" viewBox="0 0 34 30" aria-hidden="true"><rect x="1" y="1" width="32" height="21" rx="4" fill="#FF6B00"/><rect x="4.5" y="4.5" width="25" height="14" rx="1.6" fill="#0B0B0F"/><path d="M7.5 15.5 13 10l3.5 3 5-5" stroke="#FF6B00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 28.5h8M17 22.5v6" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/></svg>
+            <span class="logo-word">GIFTRONIC<b>04</b><small>.COM</small></span>
+          </a>
+          <form class="search" role="search" id="search" autocomplete="off">
+            <i data-i="search" data-s="20"></i>
+            <label class="sr-only" for="q">Buscar productos</label>
+            <input id="q" type="search" placeholder="Busca portátiles, TVs, impresoras…" aria-controls="suggest" aria-autocomplete="list">
+            <button class="search-btn" type="submit" aria-label="Buscar"><i data-i="search" data-s="18"></i><span>Buscar</span></button>
+            <div class="suggest" id="suggest" role="listbox" aria-label="Sugerencias" hidden></div>
+          </form>
+          <div class="hdr-actions">
+            <a class="hdr-act" href="https://wa.me/573017913140" target="_blank" rel="noopener" aria-label="Asesoría por WhatsApp"><i data-i="chat" data-s="22"></i><span class="t"><small>Asesoría</small>WhatsApp</span></a>
+            <a class="hdr-act hide-sm" href="#inicio" data-toast="Aquí va el acceso a Mi cuenta de WooCommerce."><i data-i="user" data-s="22"></i><span class="t"><small>Hola,</small>Mi cuenta</span></a>
+            <button type="button" class="hdr-act" data-open="cart" id="cart-btn" aria-label="Carrito, 0 productos"><i data-i="cart" data-s="22"></i><span class="cart-count" id="cart-count">0</span><span class="t"><small>Tu compra</small>Carrito</span></button>
+          </div>
+        </div>
+        <nav class="catnav" aria-label="Categorías">
+          <div class="wrap catnav-in">
+            <button type="button" class="catnav-all" id="mega-btn" aria-expanded="false" aria-controls="mega"><i data-i="menu" data-s="18"></i>Todas las categorías<i data-i="down" data-s="16" class="chev"></i></button>
+            <a href="#categoria" data-cat="Portátiles">Portátiles</a>
+            <a href="#categoria" data-cat="Televisores">Televisores</a>
+            <a href="#producto" data-go="producto">Combos TV + barra</a>
+            <a href="#categoria" data-cat="Impresoras">Impresoras</a>
+            <a href="#categoria" data-cat="Tablets">Tablets</a>
+            <a href="#categoria" data-cat="Gaming">Gaming</a>
+            <a href="#plan" data-go="plan" class="deal"><i data-i="tag" data-s="16"></i>Ofertas reales</a>
+          </div>
+          <div class="mega" id="mega" hidden>
+            <div class="wrap">
+              <div class="mega-grid" id="mega-grid"></div>
+              <div class="mega-foot"><span>¿No sabes cuál elegir? Te asesoramos sin compromiso.</span><a href="https://wa.me/573017913140" target="_blank" rel="noopener"><i data-i="chat" data-s="16"></i>Escríbenos por WhatsApp</a></div>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <main id="main" tabindex="-1">
+<section class="view" id="v-inicio" data-view="inicio" aria-label="Inicio">
+  <div class="wrap hero">
+    <div class="hero-card">
+      <div class="hero-copy">
+        <span class="eyebrow"><i data-i="badge" data-s="15"></i>Estamos a tu servicio</span>
+        <h1>Tecnología original con garantía, <em>a cuotas</em> y con envío a toda Colombia</h1>
+        <p class="hero-sub">Portátiles, televisores, impresoras y más de 300 productos de Samsung, Lenovo, HP, Acer y otras marcas. Paga de contado o hasta en 36 cuotas.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary btn-lg" href="#producto" data-go="producto">Ver el combo estrella<i data-i="arrow" data-s="18"></i></a>
+          <a class="btn btn-outline btn-lg" href="#categoria" data-go="categoria">Explorar portátiles</a>
+        </div>
+        <ul class="ticks">
+          <li><i data-i="check" data-s="16"></i>Garantía de marca</li>
+          <li><i data-i="check" data-s="16"></i>Factura electrónica</li>
+          <li><i data-i="check" data-s="16"></i>Envío gratis</li>
+        </ul>
+      </div>
+      <div class="hero-stage">
+        <div class="hero-art" data-art="combo" data-h="235" data-label="Combo televisor Samsung de 40 pulgadas QLED con barra de sonido"></div>
+        <a class="hero-tag" href="#producto" data-go="producto">
+          <span class="k">Combo estrella</span>
+          <span class="n">Samsung TV 40" QLED + barra de sonido HW-B400F</span>
+          <span class="p">$&nbsp;999.999</span>
+          <span class="f">o desde <b>$&nbsp;44.600</b>/mes con Addi</span>
+          <span class="o"><span class="badge badge-off">-50&nbsp;%</span></span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap trust">
+    <ul class="trust-list">
+      <li><span class="trust-ic"><i data-i="badge"></i></span><div><strong>Productos originales</strong><span>Garantía directa con la marca</span></div></li>
+      <li><span class="trust-ic"><i data-i="truck"></i></span><div><strong>Envío a todo el país</strong><span>Gratis a cualquier ciudad de Colombia</span></div></li>
+      <li><span class="trust-ic"><i data-i="lock"></i></span><div><strong>Pagos seguros</strong><span>Wompi, PSE, Nequi y tarjetas</span></div></li>
+      <li><span class="trust-ic"><i data-i="chat"></i></span><div><strong>Asesoría por WhatsApp</strong><span>Te ayudamos a elegir</span></div></li>
+    </ul>
+  </div>
+
+  <section class="wrap sec" aria-labelledby="h-cats">
+    <div class="sec-h"><div><h2 id="h-cats">Compra por categoría</h2><p>Encuentra rápido lo que buscas.</p></div></div>
+    <ul class="tiles" id="tiles"></ul>
+  </section>
+
+  <section class="wrap sec" aria-labelledby="h-combos">
+    <div class="sec-h">
+      <div><h2 id="h-combos">Combos TV + barra de sonido</h2><p>Imagen y sonido listos para instalar. ¿Ya tienes TV? Suma solo la barra.</p></div>
+      <a class="link" href="#categoria" data-cat="Combos TV + barra">Ver todo<i data-i="right" data-s="16"></i></a>
+    </div>
+    <div class="rail">
+      <button type="button" class="rail-btn prev" aria-label="Ver anteriores"><i data-i="left"></i></button>
+      <div class="rail-track" data-cards="sam40,his40,sam43c,sam43,b400,hs1000,gunma"></div>
+      <button type="button" class="rail-btn next" aria-label="Ver siguientes"><i data-i="right"></i></button>
+    </div>
+  </section>
+
+  <section class="wrap sec" aria-labelledby="h-study">
+    <div class="sec-h">
+      <div><h2 id="h-study">Portátiles para estudiar y trabajar</h2><p>Con disco SSD para clases, oficina y teletrabajo. También en All in One.</p></div>
+      <a class="link" href="#categoria" data-go="categoria">Ver todo<i data-i="right" data-s="16"></i></a>
+    </div>
+    <div class="rail">
+      <button type="button" class="rail-btn prev" aria-label="Ver anteriores"><i data-i="left"></i></button>
+      <div class="rail-track" data-cards="acergo,dell3530,hp15,hp14,aiolenovo,aiohp"></div>
+      <button type="button" class="rail-btn next" aria-label="Ver siguientes"><i data-i="right"></i></button>
+    </div>
+  </section>
+
+  <section class="wrap sec" aria-labelledby="h-gamer">
+    <div class="sec-h">
+      <div><h2 id="h-gamer">Portátiles gamer y setup</h2><p>RTX 3050 para jugar, más monitor, mouse y micrófono para completar el escritorio.</p></div>
+      <a class="link" href="#categoria" data-cat="Gaming">Ver todo<i data-i="right" data-s="16"></i></a>
+    </div>
+    <div class="rail">
+      <button type="button" class="rail-btn prev" aria-label="Ver anteriores"><i data-i="left"></i></button>
+      <div class="rail-track" data-cards="nitrolite,nitrov15,caixun,nmw105,omkara"></div>
+      <button type="button" class="rail-btn next" aria-label="Ver siguientes"><i data-i="right"></i></button>
+    </div>
+  </section>
+
+  <section class="wrap sec">
+    <div class="split">
+      <div aria-labelledby="h-print">
+        <div class="sec-h">
+          <div><h2 id="h-print">Impresoras de tinta continua y láser</h2><p>Menor costo por página para casa y oficina.</p></div>
+          <a class="link" href="#categoria" data-cat="Impresoras">Ver todo<i data-i="right" data-s="16"></i></a>
+        </div>
+        <div class="duo" data-cards="brother,ricoh"></div>
+      </div>
+      <div aria-labelledby="h-tabs">
+        <div class="sec-h">
+          <div><h2 id="h-tabs">Tablets</h2><p>Para estudiar, tomar notas y ver contenido.</p></div>
+          <a class="link" href="#categoria" data-cat="Tablets">Ver todo<i data-i="right" data-s="16"></i></a>
+        </div>
+        <div class="duo" data-cards="tab11,tabpro"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-pay">
+    <div class="payband dark">
+      <div>
+        <h2 id="h-pay">Llévalo hoy y paga a cuotas <em>sin cuota inicial</em></h2>
+        <p>Paga de contado con Wompi, PSE, Nequi o tarjeta, o financia tu compra con Addi, Sumas Pay o Sistecrédito. La solicitud se hace en línea al pagar.</p>
+      </div>
+      <div class="pay-groups">
+        <div class="pay-g"><h3>De contado</h3><ul class="pay dark"><li>Wompi</li><li>PSE</li><li>Nequi</li><li>Visa</li><li>Mastercard</li><li>Transferencia</li></ul></div>
+        <div class="pay-g"><h3>A cuotas</h3><ul class="fin-list"><li>Addi <span>hasta 24 cuotas</span></li><li>Sumas Pay <span>hasta 36 cuotas</span></li><li>Sistecrédito <span>hasta 6 cuotas</span></li></ul></div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<section class="view" id="v-categoria" data-view="categoria" aria-label="Categoría Portátiles" hidden>
+  <div class="wrap">
+    <ol class="crumbs">
+      <li><a href="#inicio" data-go="inicio">Inicio</a></li>
+      <li aria-hidden="true"><i data-i="right" data-s="14"></i></li>
+      <li><a href="#categoria" data-go="categoria">Computación</a></li>
+      <li aria-hidden="true"><i data-i="right" data-s="14"></i></li>
+      <li aria-current="page">Portátiles</li>
+    </ol>
+    <header class="cat-head">
+      <h1>Portátiles</h1>
+      <p>Portátiles originales Acer, Dell y HP con garantía de marca, factura electrónica y envío gratis a toda Colombia. Filtra por procesador, memoria RAM, almacenamiento o uso, y págalo de contado o a cuotas con Addi y Sumas Pay.</p>
+      <div class="usechips" role="group" aria-label="Filtrar por uso">
+        <button type="button" class="usechip" data-use="Estudio" aria-pressed="false">Para estudiar</button>
+        <button type="button" class="usechip" data-use="Trabajo" aria-pressed="false">Para trabajar</button>
+        <button type="button" class="usechip" data-use="Gamer" aria-pressed="false">Gamer</button>
+      </div>
+    </header>
+    <div class="cat-layout">
+      <aside class="filters" id="filters-d" aria-label="Filtros"></aside>
+      <div>
+        <div class="toolbar">
+          <p class="count" id="count" aria-live="polite"></p>
+          <button type="button" class="btn btn-ghost filter-btn" data-open="filters"><i data-i="sliders" data-s="18"></i>Filtrar<span id="fcount"></span></button>
+          <label class="sort"><span class="sort-l">Ordenar por</span>
+            <select id="sort" aria-label="Ordenar por">
+              <option value="top">Más vendidos</option>
+              <option value="asc">Menor precio</option>
+              <option value="desc">Mayor precio</option>
+              <option value="off">Mayor descuento</option>
+            </select>
+          </label>
+        </div>
+        <div class="active-f" id="active-f" hidden></div>
+        <div class="grid" id="cat-grid"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="view" id="v-producto" data-view="producto" aria-label="Producto" hidden>
+  <div class="wrap">
+    <ol class="crumbs">
+      <li><a href="#inicio" data-go="inicio">Inicio</a></li>
+      <li aria-hidden="true"><i data-i="right" data-s="14"></i></li>
+      <li><a href="#categoria" data-cat="Televisores">TV y Audio</a></li>
+      <li aria-hidden="true"><i data-i="right" data-s="14"></i></li>
+      <li><a href="#categoria" data-cat="Combos TV + barra">Combos TV + barra</a></li>
+      <li aria-hidden="true"><i data-i="right" data-s="14"></i></li>
+      <li aria-current="page">Samsung 40" QLED + HW-B400F</li>
+    </ol>
+
+    <div class="pdp-top">
+      <div class="gal">
+        <div class="gal-main zoomable" id="gal-main" tabindex="0" aria-roledescription="carrusel" aria-label="Galería del producto. Usa las flechas del teclado para cambiar de imagen.">
+          <div class="gal-stage" id="gal-stage"></div>
+          <span class="gal-kind" id="gal-kind"></span>
+          <button type="button" class="gal-arrow prev" id="gal-prev" aria-label="Imagen anterior"><i data-i="left"></i></button>
+          <button type="button" class="gal-arrow next" id="gal-next" aria-label="Imagen siguiente"><i data-i="right"></i></button>
+          <span class="gal-count" id="gal-count"></span>
+          <span class="gal-hint"><i data-i="zoom" data-s="14"></i>Pasa el mouse para ampliar</span>
+        </div>
+        <div class="thumbs" id="thumbs" role="group" aria-label="Miniaturas de la galería"></div>
+      </div>
+
+      <div class="buy">
+        <p class="pdp-brand"><b>Samsung</b></p>
+        <h1 class="pdp-model">QN40Q5FAAKXZL + HW-B400F</h1>
+        <p class="pdp-type">Combo TV QLED 40" + barra de sonido</p>
+        <a class="rating" href="#resenas" data-scroll="resenas"><span class="stars" aria-hidden="true" data-stars="5"></span><b>5,0</b><span>1 reseña</span></a>
+
+        <div class="pricebox">
+          <div class="p-was"><span class="badge badge-dark">-50&nbsp;%</span><s aria-label="Precio anterior">$&nbsp;1.999.999</s><span class="p-save">Ahorras $&nbsp;1.000.000</span></div>
+          <div class="p-cash"><span class="v">$&nbsp;999.999</span><span class="l"><b>Precio de contado</b>Wompi · PSE · Nequi · Transferencia</span></div>
+          <div class="p-fin"><span class="v">$&nbsp;1.070.000</span><span class="l">con Addi, Sumas Pay o Sistecrédito</span><span class="ex">Ejemplo</span></div>
+          <p class="p-cuotas"><i data-i="card" data-s="18"></i><span>Paga con <b>Addi</b> desde 3 hasta 24 cuotas de <b>$&nbsp;44.600</b>/mes aprox. <a class="link" href="#calc" data-scroll="calc">Simular cuotas</a></span></p>
+        </div>
+
+        <p class="stock"><span class="dot" aria-hidden="true"></span>Disponible <span>· Quedan 10 unidades</span></p>
+
+        <div class="iboxes">
+          <div class="ibox"><span class="ic"><i data-i="truck"></i></span><div><strong><em>Envío gratis</em> a toda Colombia</strong><p>Bogotá, Medellín, Cali y Barranquilla: 1 a 3 días hábiles. Otras ciudades: 2 a 6 días hábiles.</p></div></div>
+          <div class="ibox"><span class="ic"><i data-i="shield"></i></span><div><strong>1 año de garantía directa con la marca</strong><p>Producto original · Factura electrónica a tu nombre o el de tu empresa.</p></div></div>
+        </div>
+
+        <div class="buy-actions">
+          <button type="button" class="btn btn-primary btn-lg btn-block" data-buy="sam40">Comprar ahora</button>
+          <button type="button" class="btn btn-outline btn-lg btn-block" data-add="sam40">Agregar al carrito</button>
+          <a class="btn btn-ghost btn-block wa-btn" href="https://wa.me/573017913140?text=Hola%2C%20quiero%20asesor%C3%ADa%20sobre%20el%20combo%20Samsung%2040%22%20QLED%20%2B%20barra%20HW-B400F" target="_blank" rel="noopener"><i data-i="chat" data-s="18"></i>Asesoría por WhatsApp</a>
+        </div>
+        <p class="sold"><i data-i="badge" data-s="16"></i>Vendido y despachado por <b>Giftronic04.com</b></p>
+        <div class="payrow"><span>Pagando con</span><ul class="pay"><li>Wompi</li><li>PSE</li><li>Nequi</li><li>Visa</li><li>Mastercard</li><li>Addi</li><li>Sumas Pay</li><li>Sistecrédito</li></ul></div>
+      </div>
+
+      <section class="calc" id="calc" aria-labelledby="calc-t">
+        <div class="calc-h"><span class="ic"><i data-i="calc"></i></span><div><h2 id="calc-t">Calcula tus cuotas</h2><p>Sobre el precio con financiación de este combo</p></div></div>
+        <fieldset class="opts fin-opts">
+          <legend class="step">1 · Elige la financiera</legend>
+          <label class="opt"><input type="radio" name="fin" value="addi" checked><span>Addi<small>hasta 24 cuotas</small></span></label>
+          <label class="opt"><input type="radio" name="fin" value="sumas"><span>Sumas Pay<small>hasta 36 cuotas</small></span></label>
+          <label class="opt"><input type="radio" name="fin" value="siste"><span>Sistecrédito<small>hasta 6 cuotas</small></span></label>
+        </fieldset>
+        <fieldset class="opts">
+          <legend class="step">2 · Elige el número de cuotas</legend>
+          <div class="n-opts" id="n-opts"></div>
+        </fieldset>
+        <div class="calc-out" aria-live="polite"><span class="l" id="calc-l">Pagarías aprox.</span><span class="v" id="calc-v"></span><span class="t" id="calc-tt"></span></div>
+        <p class="calc-note"><i data-i="info" data-s="16"></i><span>Cálculo aproximado de ejemplo sobre un precio financiado de $&nbsp;1.070.000. La tasa, el cupo y la aprobación los define cada financiera.</span></p>
+      </section>
+    </div>
+
+    <section class="psec" aria-labelledby="h-box">
+      <div class="psec-h"><div><h2 id="h-box">¿Qué incluye la caja?</h2><p>Contenido de referencia: confírmalo con el empaque del fabricante.</p></div></div>
+      <ul class="inbox">
+        <li><span class="ic"><i data-i="tv" data-s="26"></i></span><span>Televisor 40" QLED<small>QN40Q5FAAKXZL</small></span></li>
+        <li><span class="ic"><i data-i="speaker" data-s="26"></i></span><span>Barra de sonido<small>HW-B400F/ZL</small></span></li>
+        <li><span class="ic"><i data-i="remote" data-s="26"></i></span><span>Controles remotos<small>TV y barra</small></span></li>
+        <li><span class="ic"><i data-i="stand" data-s="26"></i></span><span>Base del televisor<small>Soportes y tornillos</small></span></li>
+        <li><span class="ic"><i data-i="plug" data-s="26"></i></span><span>Cables de alimentación<small>TV y barra</small></span></li>
+        <li><span class="ic"><i data-i="file" data-s="26"></i></span><span>Manuales y garantía<small>Documentos de la marca</small></span></li>
+      </ul>
+    </section>
+
+    <section class="psec" aria-labelledby="h-specs">
+      <div class="psec-h"><div><h2 id="h-specs">Especificaciones</h2><p>Lo esencial de un vistazo. Abajo, la ficha completa de cada producto del combo.</p></div></div>
+      <ul class="specs6">
+        <li><span class="ic"><i data-i="tv" data-s="22"></i></span><span>Pantalla</span><strong>40" QLED Quantum Dot</strong></li>
+        <li><span class="ic"><i data-i="scan" data-s="22"></i></span><span>Resolución</span><strong>Full HD 1920 × 1080 · HDR</strong></li>
+        <li><span class="ic"><i data-i="cpu" data-s="22"></i></span><span>Sistema</span><strong>Tizen · One UI</strong></li>
+        <li><span class="ic"><i data-i="volume" data-s="22"></i></span><span>Sonido</span><strong>OTS Lite + barra 2.0 Ch Dolby</strong></li>
+        <li><span class="ic"><i data-i="wifi" data-s="22"></i></span><span>Conectividad</span><strong>Wi-Fi · Bluetooth · HDMI ARC</strong></li>
+        <li><span class="ic"><i data-i="shield" data-s="22"></i></span><span>Garantía</span><strong>1 año con la marca</strong></li>
+      </ul>
+      <div class="acc">
+        <details open>
+          <summary><i data-i="tv"></i><span>Televisor QN40Q5FAAKXZL <small>· Samsung 40" QLED</small></span><i data-i="down" data-s="18" class="chev"></i></summary>
+          <table class="spec-table">
+            <tr><th scope="row">Tamaño de pantalla</th><td>40"</td></tr>
+            <tr><th scope="row">Tecnología</th><td>QLED (Quantum Dot)</td></tr>
+            <tr><th scope="row">Resolución</th><td>Full HD 1920 × 1080</td></tr>
+            <tr><th scope="row">HDR</th><td>Sí</td></tr>
+            <tr><th scope="row">Sistema operativo</th><td>Tizen · One UI</td></tr>
+            <tr><th scope="row">Sonido</th><td>OTS Lite (Object Tracking Sound Lite)</td></tr>
+            <tr><th scope="row">Seguridad</th><td>Samsung Knox</td></tr>
+            <tr><th scope="row">Conectividad inalámbrica</th><td>Wi-Fi · Bluetooth</td></tr>
+            <tr><th scope="row">Puertos</th><td>HDMI · USB · RF</td></tr>
+          </table>
+        </details>
+        <details>
+          <summary><i data-i="speaker"></i><span>Barra de sonido HW-B400F/ZL <small>· Samsung 2.0 Ch</small></span><i data-i="down" data-s="18" class="chev"></i></summary>
+          <table class="spec-table">
+            <tr><th scope="row">Canales</th><td>2.0</td></tr>
+            <tr><th scope="row">Woofer</th><td>Integrado</td></tr>
+            <tr><th scope="row">Audio</th><td>Dolby 2ch</td></tr>
+            <tr><th scope="row">Bluetooth</th><td>4.2</td></tr>
+            <tr><th scope="row">Conexión al TV</th><td>HDMI ARC · Entrada óptica</td></tr>
+            <tr><th scope="row">USB</th><td>Sí</td></tr>
+            <tr><th scope="row">Modos de sonido</th><td>Modo noche · Mejora de voz</td></tr>
+            <tr><th scope="row">Dimensiones</th><td>641 × 66,5 × 107 mm</td></tr>
+            <tr><th scope="row">Peso</th><td>2,1 kg</td></tr>
+            <tr><th scope="row">Color</th><td>Titan Black</td></tr>
+          </table>
+        </details>
+      </div>
+    </section>
+
+    <section class="psec" aria-labelledby="h-ben">
+      <div class="psec-h"><div><h2 id="h-ben">Por qué elegir este combo</h2></div></div>
+      <ul class="benefits">
+        <li><span class="ic"><i data-i="sun"></i></span><strong>Color con Quantum Dot</strong><p>El panel QLED usa puntos cuánticos para mostrar colores más intensos.</p></li>
+        <li><span class="ic"><i data-i="volume"></i></span><strong>Sonido que sigue la acción</strong><p>OTS Lite ubica el sonido según lo que pasa en pantalla; la barra suma cuerpo.</p></li>
+        <li><span class="ic"><i data-i="moon"></i></span><strong>Diálogos claros de noche</strong><p>Modo noche y mejora de voz para ver sin subir el volumen.</p></li>
+        <li><span class="ic"><i data-i="cable"></i></span><strong>Un cable, un control</strong><p>Conecta la barra por HDMI ARC y maneja el volumen con el control del TV.</p></li>
+      </ul>
+    </section>
+
+    <section class="psec" aria-labelledby="h-video">
+      <div class="psec-h"><div><h2 id="h-video">Míralo en video</h2><p>El video se carga solo cuando lo reproduces, para que la página abra rápido.</p></div></div>
+      <div id="video-slot">
+        <button type="button" class="video" id="video-btn" aria-label="Reproducir video del producto">
+          <span class="play"><i data-i="play" data-s="30"></i></span>
+          <span class="cap">Combo Samsung 40" QLED + barra HW-B400F <span>Video del fabricante</span></span>
+        </button>
+      </div>
+    </section>
+
+    <section class="psec" aria-labelledby="h-faq">
+      <div class="psec-h"><div><h2 id="h-faq">Preguntas frecuentes</h2></div></div>
+      <div class="faq">
+        <details><summary>¿Cuánto tarda el envío y cuánto cuesta?<i data-i="down" data-s="18" class="chev"></i></summary><p>El envío es gratis a toda Colombia. A Bogotá, Medellín, Cali y Barranquilla llega en 1 a 3 días hábiles; al resto del país, en 2 a 6 días hábiles. Te enviamos la guía por WhatsApp y correo para que sigas tu pedido.</p></details>
+        <details><summary>¿La garantía es directamente con la marca?<i data-i="down" data-s="18" class="chev"></i></summary><p>Sí. El combo tiene 1 año de garantía con Samsung. Si necesitas usarla, escríbenos por WhatsApp y te guiamos con el centro de servicio autorizado.</p></details>
+        <details><summary>¿Me entregan factura electrónica?<i data-i="down" data-s="18" class="chev"></i></summary><p>Sí, toda compra lleva factura electrónica. Puedes pedirla a nombre de una persona o de una empresa con NIT.</p></details>
+        <details><summary>¿Cómo pago a cuotas con Addi, Sumas Pay o Sistecrédito?<i data-i="down" data-s="18" class="chev"></i></summary><p>Elige la financiera al pagar, completa la solicitud en línea y, si te aprueban, pagas en cuotas mensuales. Antes de confirmar ves el precio con financiación y el valor de cada cuota.</p></details>
+        <details><summary>¿Puedo retractarme de la compra?<i data-i="down" data-s="18" class="chev"></i></summary><p>Sí. Por ser una compra a distancia tienes derecho de retracto dentro de los 5 días hábiles siguientes a la entrega (Ley 1480 de 2011, art. 47). El producto debe devolverse en las mismas condiciones en que lo recibiste.</p></details>
+      </div>
+    </section>
+
+    <section class="psec" id="resenas" aria-labelledby="h-rev">
+      <div class="psec-h"><div><h2 id="h-rev">Reseñas</h2></div><button type="button" class="btn btn-ghost" data-toast="Aquí se abre el formulario de reseñas (solo compradores verificados).">Escribir una reseña</button></div>
+      <div class="reviews">
+        <div class="rv-sum">
+          <div class="rv-big"><strong>5,0</strong><div><span class="stars" aria-hidden="true" data-stars="5"></span><small>1 reseña</small></div></div>
+          <ul class="bars" aria-label="Distribución de calificaciones">
+            <li>5 ★<span class="bar"><i style="width:100%"></i></span>1</li>
+            <li>4 ★<span class="bar"><i style="width:0"></i></span>0</li>
+            <li>3 ★<span class="bar"><i style="width:0"></i></span>0</li>
+            <li>2 ★<span class="bar"><i style="width:0"></i></span>0</li>
+            <li>1 ★<span class="bar"><i style="width:0"></i></span>0</li>
+          </ul>
+        </div>
+        <article class="rv">
+          <div class="rv-top"><b>Cliente de Giftronic04</b><span class="verified"><i data-i="badge" data-s="15"></i>Compra verificada</span></div>
+          <span class="stars" aria-label="5 de 5 estrellas" data-stars="5"></span>
+          <p class="ph">Aquí se muestra el texto de la reseña real publicada en la tienda.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="psec" aria-labelledby="h-comp">
+      <div class="psec-h"><div><h2 id="h-comp">Completa tu compra</h2><p>Accesorios que suelen llevarse con un televisor.</p></div></div>
+      <ul class="complete">
+        <li><a href="#categoria" data-cat="Soportes de pared"><span class="ic"><i data-i="stand" data-s="24"></i></span><span><strong>Soportes de pared</strong><span>Para TV de 32" a 55"</span></span><i data-i="right" data-s="18" class="chev-r"></i></a></li>
+        <li><a href="#categoria" data-cat="Cables HDMI"><span class="ic"><i data-i="cable" data-s="24"></i></span><span><strong>Cables HDMI</strong><span>Para consola, PC o decodificador</span></span><i data-i="right" data-s="18" class="chev-r"></i></a></li>
+        <li><a href="#categoria" data-cat="Reguladores de voltaje"><span class="ic"><i data-i="bolt" data-s="24"></i></span><span><strong>Reguladores de voltaje</strong><span>Protege tu TV y tu barra</span></span><i data-i="right" data-s="18" class="chev-r"></i></a></li>
+      </ul>
+    </section>
+
+    <section class="psec" aria-labelledby="h-sim">
+      <div class="psec-h"><div><h2 id="h-sim">Productos similares</h2></div></div>
+      <div class="rail">
+        <button type="button" class="rail-btn prev" aria-label="Ver anteriores"><i data-i="left"></i></button>
+        <div class="rail-track" data-cards="his40,sam43c,sam43,gunma"></div>
+        <button type="button" class="rail-btn next" aria-label="Ver siguientes"><i data-i="right"></i></button>
+      </div>
+    </section>
+  </div>
+
+  <div class="buybar">
+    <div class="bb-p"><strong>$&nbsp;999.999</strong><span>o desde $&nbsp;44.600/mes con Addi</span></div>
+    <button type="button" class="btn btn-primary" data-buy="sam40">Comprar</button>
+  </div>
+</section>
+
+      </main>
+
+      <footer class="foot dark">
+        <div class="wrap">
+          <div class="foot-grid">
+            <div class="about">
+              <a class="logo" href="#inicio" data-go="inicio" aria-label="Giftronic04.com, ir al inicio">
+                <svg class="logo-mark" viewBox="0 0 34 30" aria-hidden="true"><rect x="1" y="1" width="32" height="21" rx="4" fill="#FF6B00"/><rect x="4.5" y="4.5" width="25" height="14" rx="1.6" fill="#0B0B0F"/><path d="M7.5 15.5 13 10l3.5 3 5-5" stroke="#FF6B00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 28.5h8M17 22.5v6" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/></svg>
+                <span class="logo-word">GIFTRONIC<b>04</b><small>.COM</small></span>
+              </a>
+              <p>Tecnología original con garantía de marca. Estamos a tu servicio en toda Colombia.</p>
+              <div class="contact">
+                <a href="https://wa.me/573017913140" target="_blank" rel="noopener"><i data-i="chat" data-s="18"></i>+57 301 791 3140 <small>WhatsApp</small></a>
+                <a href="mailto:info@giftronic04.com"><i data-i="mail" data-s="18"></i>info@giftronic04.com</a>
+                <span><i data-i="clock" data-s="18"></i>Horario de atención <small>por confirmar</small></span>
+              </div>
+            </div>
+            <div>
+              <h3>Comprar</h3>
+              <ul>
+                <li><a href="#categoria" data-cat="Portátiles">Portátiles</a></li>
+                <li><a href="#categoria" data-cat="Televisores">Televisores</a></li>
+                <li><a href="#producto" data-go="producto">Combos TV + barra</a></li>
+                <li><a href="#categoria" data-cat="Impresoras">Impresoras</a></li>
+                <li><a href="#categoria" data-cat="Tablets">Tablets</a></li>
+                <li><a href="#categoria" data-cat="Gaming">Gaming</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ayuda y políticas</h3>
+              <ul>
+                <li><a href="#plan" data-go="plan">Garantías</a></li>
+                <li><a href="#plan" data-go="plan">Envíos y entregas</a></li>
+                <li><a href="#plan" data-go="plan">Cambios y devoluciones</a></li>
+                <li><a href="#plan" data-go="plan">Derecho de retracto</a></li>
+                <li><a href="#plan" data-go="plan">Términos y condiciones</a></li>
+                <li><a href="#plan" data-go="plan">Tratamiento de datos personales</a></li>
+                <li><a href="#inicio" data-toast="Aquí va el rastreo de pedidos de WooCommerce.">Rastrear mi pedido</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3>Síguenos</h3>
+              <ul>
+                <li><a href="https://www.instagram.com/giftronic.04/" target="_blank" rel="noopener">Instagram · @giftronic.04</a></li>
+                <li><a href="https://www.facebook.com/102269164857514" target="_blank" rel="noopener">Facebook · Giftronic04</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="foot-pay">
+            <span>Medios de pago</span>
+            <ul class="pay dark"><li>Wompi</li><li>PSE</li><li>Nequi</li><li>Visa</li><li>Mastercard</li><li>Addi</li><li>Sumas Pay</li><li>Sistecrédito</li></ul>
+          </div>
+          <div class="foot-legal">
+            <span>© 2026 Giftronic04.com · Precios en pesos colombianos (COP) con IVA incluido.</span>
+            <a class="sic" href="https://www.sic.gov.co" target="_blank" rel="noopener"><i data-i="shield" data-s="18"></i>Superintendencia de Industria y Comercio</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Menú móvil -->
+    <div class="layer" id="layer-menu" hidden>
+      <div class="scrim" data-close></div>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="menu-t">
+        <div class="sheet-h"><h2 id="menu-t">Categorías</h2><button type="button" class="icon-btn" data-close aria-label="Cerrar menú"><i data-i="x" data-s="22"></i></button></div>
+        <div class="sheet-b">
+          <div id="mfams"></div>
+          <div class="m-quick">
+            <a class="btn btn-ghost" href="https://wa.me/573017913140" target="_blank" rel="noopener"><i data-i="chat" data-s="18"></i>Asesoría por WhatsApp</a>
+            <a class="btn btn-ghost" href="#inicio" data-close data-toast="Aquí va el acceso a Mi cuenta de WooCommerce."><i data-i="user" data-s="18"></i>Mi cuenta</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carrito -->
+    <div class="layer right" id="layer-cart" hidden>
+      <div class="scrim" data-close></div>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cart-t">
+        <div class="sheet-h"><h2 id="cart-t">Tu carrito</h2><button type="button" class="icon-btn" data-close aria-label="Cerrar carrito"><i data-i="x" data-s="22"></i></button></div>
+        <div class="sheet-b" id="cart-body"></div>
+        <div class="sheet-f" id="cart-foot"></div>
+      </div>
+    </div>
+
+    <!-- Filtros móvil -->
+    <div class="layer right" id="layer-filters" hidden>
+      <div class="scrim" data-close></div>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="flt-t">
+        <div class="sheet-h"><h2 id="flt-t">Filtrar portátiles</h2><button type="button" class="icon-btn" data-close aria-label="Cerrar filtros"><i data-i="x" data-s="22"></i></button></div>
+        <div class="sheet-b" id="filters-m"></div>
+        <div class="sheet-f">
+          <button type="button" class="btn btn-primary btn-lg btn-block" data-close id="flt-apply">Ver productos</button>
+          <button type="button" class="btn btn-ghost btn-block" data-clear>Limpiar filtros</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-slot" aria-live="polite"></div>
+  </div>
+</div>
+
+<div class="doc" id="v-plan" hidden>
+<article class="doc-in">
+  <header class="doc-hero">
+    <span class="eyebrow">Plan de cambios · WooCommerce + Elementor + Astra</span>
+    <h1>Cómo llevar el rediseño a giftronic04.com</h1>
+    <p>Lista priorizada: primero lo que más frena ventas y cuesta poco arreglar; al final, lo que exige más trabajo. Cada punto dice qué hacer y con qué ajuste o plugin.</p>
+    <div class="howto">
+      <strong>Cómo leer el prototipo</strong>
+      <ul>
+        <li><i data-i="check" data-s="16"></i><span>Productos, precios y especificaciones son los de la tienda. Todas las fichas abren el ejemplo del combo Samsung 40".</span></li>
+        <li><i data-i="check" data-s="16"></i><span>Tiempos de envío, horario, stock «Últimas unidades» (Ricoh) y el precio con financiación (+7 %) son ejemplos para confirmar.</span></li>
+        <li><i data-i="check" data-s="16"></i><span>Las imágenes son ilustraciones de muestra: en la tienda van las fotos reales sobre fondo blanco, en formato cuadrado.</span></li>
+        <li><i data-i="check" data-s="16"></i><span>El botón «Móvil» de la barra superior muestra la tienda a 390 px de ancho, como en un celular.</span></li>
+      </ul>
+    </div>
+  </header>
+
+  <h2>Cambios priorizados</h2>
+  <p>Hazlos en este orden y mide antes y después con PageSpeed Insights (móvil) y con las conversiones de Google Analytics.</p>
+
+  <p class="tier">Prioridad 1 · Esta semana</p>
+  <ol class="tasks">
+    <li class="task">
+      <h3>Quitar los videos y los dos sliders del inicio</h3>
+      <p>Los .mp4 de arriba y Smart Slider 3 + MetaSlider son la causa principal de la lentitud y del bloqueo del navegador. Reemplázalos por un solo hero estático (imagen WebP de menos de 150 KB) con el H1 real.</p>
+      <p class="how"><b>Cómo:</b> Elementor › sección Hero con un Encabezado H1 y una imagen. Desinstala el slider que no uses. Si quieres video, que vaya bajo el pliegue, con póster y <code>preload="none"</code>.</p>
+      <div class="tags"><span class="tag hi">Impacto alto</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+    <li class="task">
+      <h3>Arreglar los enlaces permanentes para quitar /index.php/</h3>
+      <p>Las URL con <code>/index.php/</code> se ven poco confiables y confunden a Google.</p>
+      <p class="how"><b>Cómo:</b> Ajustes › Enlaces permanentes › «Nombre de la entrada» y guardar (regenera el <code>.htaccess</code>). Si sigue apareciendo, pide al hosting activar <code>mod_rewrite</code>. Después crea una redirección 301 de <code>/index.php/(.*)</code> a <code>/$1</code> con el plugin Redirection y vuelve a enviar el sitemap a Search Console y el feed a Google Merchant Center.</p>
+      <div class="tags"><span class="tag hi">Impacto alto</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+    <li class="task">
+      <h3>Reparar el widget de Addi que muestra «3 cuotas de $0»</h3>
+      <p>Un valor en $0 hace dudar al cliente justo al momento de pagar.</p>
+      <p class="how"><b>Cómo:</b> actualiza el plugin de Addi, revisa en sus ajustes el <em>Ally slug</em> y el rango de montos permitido, y deja que el plugin ubique el widget con su propio hook. Si lo insertaste con un shortcode dentro de una plantilla de Elementor, suele leer el precio vacío. Prueba en una ventana de incógnito con un producto de $ 999.999.</p>
+      <div class="tags"><span class="tag hi">Impacto alto</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+    <li class="task">
+      <h3>Quitar «1 comentario / Por Giftronic.04 / fecha» de los productos</h3>
+      <p>La ficha se ve como una entrada de blog porque se le aplica la plantilla de entradas.</p>
+      <p class="how"><b>Cómo:</b> en Plantillas › Theme Builder, revisa si una plantilla de «Entrada individual» tiene la condición «Todo el sitio» o «Productos» y déjala solo para Entradas. En Astra › Personalizar › Blog › Entrada individual, desactiva autor, fecha y comentarios. Las reseñas de producto siguen activas en WooCommerce.</p>
+      <div class="tags"><span class="tag hi">Impacto alto</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+    <li class="task">
+      <h3>Sacar el video de la zona de compra</h3>
+      <p>El reproductor negro empuja el botón de compra hacia abajo. El video va en su propia sección, más abajo en la ficha.</p>
+      <p class="how"><b>Cómo:</b> mueve el widget de video en la plantilla de Producto individual de Elementor debajo de la descripción.</p>
+      <div class="tags"><span class="tag hi">Impacto alto</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+    <li class="task">
+      <h3>Escribir la meta description del inicio</h3>
+      <p>Hoy Google muestra dos URL de videos como descripción.</p>
+      <p class="how"><b>Cómo:</b> en Yoast o Rank Math, edita la página de inicio. Propuesta (150 caracteres): «Tecnología original con garantía: portátiles, TV, impresoras y más. Envío a toda Colombia y pago a cuotas con Addi y Sumas Pay.»</p>
+      <div class="tags"><span class="tag hi">Impacto alto</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+    <li class="task">
+      <h3>Limpiar el HTML roto de las descripciones</h3>
+      <p>Aparece texto como <code>&lt;a href=»http://giftronic04.com»…</code>: el editor cambió las comillas rectas por comillas angulares.</p>
+      <p class="how"><b>Cómo:</b> haz una copia de seguridad y usa Better Search Replace sobre <code>wp_posts</code>: cambia <code>href=»</code> por <code>href="</code> y <code>»&gt;</code> por <code>"&gt;</code>. Revisa tres productos antes de aplicarlo a todos.</p>
+      <div class="tags"><span class="tag">Impacto medio</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+  </ol>
+
+  <p class="tier">Prioridad 2 · Próximas 2 a 4 semanas</p>
+  <ol class="tasks" start="8" style="counter-reset:t 7">
+    <li class="task">
+      <h3>Cambiar «¡Oferta!» por el porcentaje real de descuento</h3>
+      <p>Muestra «-50 %» solo en productos con descuento verificable (ver la recomendación de precios más abajo) y quita el precio tachado del resto.</p>
+      <p class="how"><b>Cómo:</b> agrega este fragmento con el plugin Code Snippets:</p>
+      <pre class="code">add_filter( 'woocommerce_sale_flash', function( $html, $post, $product ) {
+  if ( ! $product-&gt;is_type( 'simple' ) ) return $html;
+  $antes = (float) $product-&gt;get_regular_price();
+  $ahora = (float) $product-&gt;get_sale_price();
+  if ( $antes &lt;= 0 || $ahora &lt;= 0 ) return '';
+  $pct = round( ( 1 - $ahora / $antes ) * 100 );
+  return '&lt;span class="onsale"&gt;-' . $pct . ' %&lt;/span&gt;';
+}, 10, 3 );</pre>
+      <div class="tags"><span class="tag hi">Impacto alto</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+    <li class="task">
+      <h3>Mostrar el precio por medio de pago</h3>
+      <p>Precio de contado grande (Wompi, PSE, Nequi, transferencia) y debajo el precio con financiación (Addi, Sumas Pay, Sistecrédito), como en el prototipo.</p>
+      <p class="how"><b>Cómo:</b> crea un campo «precio_financiado» con ACF y muéstralo con una etiqueta dinámica en la plantilla de Producto de Elementor Pro. Mientras no lo llenes, oculta la línea para no mostrar datos vacíos.</p>
+      <div class="tags"><span class="tag hi">Impacto alto</span><span class="tag">Esfuerzo medio</span></div>
+    </li>
+    <li class="task">
+      <h3>Rehacer la ficha de producto con el orden del prototipo</h3>
+      <p>Galería ordenada (foto limpia › ángulos › infografías), bloque de compra, cajas de envío y garantía, calculadora de cuotas, «¿Qué incluye la caja?», especificaciones en acordeón, preguntas frecuentes y reseñas.</p>
+      <p class="how"><b>Cómo:</b> una sola plantilla de Producto individual en Elementor Pro. Envío, garantía y preguntas frecuentes van como plantilla global reutilizable. En móvil, barra fija de compra con el plugin «Sticky Add To Cart Bar For WooCommerce» o una sección fija de Elementor.</p>
+      <div class="tags"><span class="tag hi">Impacto alto</span><span class="tag">Esfuerzo medio</span></div>
+    </li>
+    <li class="task">
+      <h3>Pasar las especificaciones a atributos</h3>
+      <p>Procesador, RAM, almacenamiento, pantalla y uso como atributos globales permiten los chips de la tarjeta, la tabla de la ficha y los filtros de categoría.</p>
+      <p class="how"><b>Cómo:</b> Productos › Atributos (pa_procesador, pa_ram, pa_almacenamiento, pa_pantalla, pa_uso). Empieza por portátiles y TV, que son la mayoría de las ventas.</p>
+      <div class="tags"><span class="tag hi">Impacto alto</span><span class="tag">Esfuerzo medio</span></div>
+    </li>
+    <li class="task">
+      <h3>Filtros y orden en las categorías</h3>
+      <p>Marca, precio, procesador, RAM, almacenamiento, pantalla, uso y disponibilidad. En móvil, botón «Filtrar» con panel.</p>
+      <p class="how"><b>Cómo:</b> plugin Filter Everything (versión gratuita) o los bloques de filtros de WooCommerce. Orden: más vendidos, menor precio, mayor precio y mayor descuento.</p>
+      <div class="tags"><span class="tag">Impacto medio</span><span class="tag">Esfuerzo medio</span></div>
+    </li>
+    <li class="task">
+      <h3>Mega-menú con 6 familias e íconos</h3>
+      <p>Computación, TV y Audio, Impresión, Celulares y Tablets, Gaming, y Cámaras, Redes y Cables, en lugar de un desplegable con más de 25 subcategorías.</p>
+      <p class="how"><b>Cómo:</b> Mega Menu de Astra Pro si tienes la licencia; si no, Max Mega Menu (gratis). En móvil, menú lateral con acordeón.</p>
+      <div class="tags"><span class="tag">Impacto medio</span><span class="tag">Esfuerzo medio</span></div>
+    </li>
+    <li class="task">
+      <h3>Home por intención de compra</h3>
+      <p>Cambiar la grilla mezclada de 28 productos por carruseles: combos TV + barra, portátiles para estudiar y trabajar, portátiles gamer, impresoras y tablets.</p>
+      <p class="how"><b>Cómo:</b> widget Productos de Elementor Pro (o Loop Carousel) filtrado por categoría o etiqueta, un carrusel por intención.</p>
+      <div class="tags"><span class="tag">Impacto medio</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+  </ol>
+
+  <p class="tier">Prioridad 3 · Rendimiento y confianza</p>
+  <ol class="tasks" start="15" style="counter-reset:t 14">
+    <li class="task">
+      <h3>Imágenes sin espacios en blanco al cargar</h3>
+      <p>Fondo gris claro y relación 1:1 reservada mientras carga cada foto, fotos en WebP y miniaturas regeneradas.</p>
+      <p class="how"><b>Cómo:</b> en CSS adicional de Astra: <code>.woocommerce ul.products li.product img{aspect-ratio:1/1;object-fit:contain;background:#F6F7F9}</code>. Conversión a WebP con LiteSpeed Cache (si el hosting es LiteSpeed) o Converter for Media.</p>
+      <div class="tags"><span class="tag">Impacto medio</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+    <li class="task">
+      <h3>Revisar el píxel de Meta duplicado</h3>
+      <p>Facebook for WooCommerce y PixelYourSite pueden instalar el mismo píxel dos veces: se cuentan compras dobles y se carga más código.</p>
+      <p class="how"><b>Cómo:</b> deja el píxel activo en uno solo de los dos plugins y comprueba con Meta Pixel Helper. Retrasa los scripts de seguimiento con el plugin de caché.</p>
+      <div class="tags"><span class="tag">Impacto medio</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+    <li class="task">
+      <h3>Footer completo y páginas legales</h3>
+      <p>Garantía, envíos, cambios y devoluciones, derecho de retracto, términos, tratamiento de datos, horarios, WhatsApp y enlace a la SIC.</p>
+      <p class="how"><b>Cómo:</b> plantilla de Footer en Elementor con los medios de pago en texto o con los logos oficiales de cada marca.</p>
+      <div class="tags"><span class="tag">Impacto medio</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+    <li class="task">
+      <h3>Pedir reseñas a quienes ya compraron</h3>
+      <p>Hoy el combo tiene 1 reseña. Las reseñas de compradores verificados son la prueba social más fuerte en tecnología.</p>
+      <p class="how"><b>Cómo:</b> WooCommerce › Ajustes › Productos › «Solo pueden dejar valoraciones los propietarios verificados», y un correo automático a los 7 días de la entrega con Customer Reviews for WooCommerce.</p>
+      <div class="tags"><span class="tag">Impacto medio</span><span class="tag">Esfuerzo bajo</span></div>
+    </li>
+  </ol>
+
+  <h2>Recomendación sobre precios de referencia</h2>
+  <p>Si todo está en oferta, nada destaca, y un «antes» de $ 3.999.999 al lado de $ 1.874.900 hace que el cliente dude del descuento.</p>
+  <div class="law">
+    <ol>
+      <li><b>Muestra como «precio antes» solo un precio real y verificable.</b> La Ley 1480 de 2011 (Estatuto del Consumidor) obliga a cumplir lo que se anuncia en promociones y ofertas y prohíbe la publicidad engañosa; la Superintendencia de Industria y Comercio puede sancionar un descuento calculado sobre un precio que nunca se cobró.</li>
+      <li><b>Define una regla interna y guarda la evidencia.</b> Por ejemplo: el precio de referencia es el que se cobró de verdad en los últimos 30 días, o el precio de lista del fabricante. Guarda capturas y facturas de ese precio.</li>
+      <li><b>Usa «Oferta» solo cuando haya oferta de verdad</b>, idealmente en menos de 1 de cada 5 productos y con fecha de fin visible («Hasta el domingo»).</li>
+      <li><b>Deja de redondear a x.999.999.</b> Un «antes» de $ 2.199.900 que sí existió convence más que un $ 4.399.999 inventado.</li>
+      <li><b>Informa el precio final con IVA incluido</b> y, si pagar a crédito cuesta más, muéstralo antes del pago (Ley 1480, art. 26, información pública de precios).</li>
+      <li><b>Sin descuento real, vende con otra cosa:</b> cuotas desde $ X/mes, envío gratis, garantía de marca, combo o «Últimas unidades».</li>
+    </ol>
+    <div class="compare">
+      <div class="cmp"><strong>Hoy</strong><p class="x">¡Oferta! · <s>$ 3.999.999</s> $ 1.874.900 en todos los productos</p></div>
+      <div class="cmp good"><strong>Recomendado</strong><p>-15 % · <s>$ 2.199.900</s> $ 1.874.900 solo donde se cobró ese precio; en el resto, precio limpio + «desde $ 83.600/mes con Addi»</p></div>
+    </div>
+  </div>
+
+  <h2>Datos por confirmar antes de publicar</h2>
+  <p>El prototipo los muestra como ejemplo; hay que reemplazarlos por los reales.</p>
+  <ul class="confirm">
+    <li><i data-i="info" data-s="18"></i><span>Tiempos de envío por ciudad y si el envío gratis aplica a todo el catálogo.</span></li>
+    <li><i data-i="info" data-s="18"></i><span>Precio con financiación de cada financiera (el prototipo usa +7 % sobre el contado) y número máximo de cuotas.</span></li>
+    <li><i data-i="info" data-s="18"></i><span>Si de verdad se acepta Sistecrédito y si Addi y Sumas Pay son «sin cuota inicial» para todos los montos.</span></li>
+    <li><i data-i="info" data-s="18"></i><span>Horario de atención, dirección de la tienda física y contenido exacto de la caja de cada combo.</span></li>
+    <li><i data-i="info" data-s="18"></i><span>Qué precios «antes» son reales (ver la recomendación de arriba).</span></li>
+  </ul>
+</article>
+
+</div>
+
+<script>
+/* ---------- Icons (Lucide-style, 24px grid, stroke) ---------- */
+const ICONS = {
+  search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  cart:'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+  chat:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01"/>',
+  menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  down:'<path d="m6 9 6 6 6-6"/>',
+  right:'<path d="m9 18 6-6-6-6"/>',
+  left:'<path d="m15 18-6-6 6-6"/>',
+  arrow:'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  truck:'<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
+  shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  card:'<rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  badge:'<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>',
+  star:'<path d="M12 2.5l2.94 5.96 6.56.95-4.75 4.63 1.12 6.54L12 17.5l-5.87 3.08 1.12-6.54L2.5 9.41l6.56-.95z"/>',
+  laptop:'<path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/>',
+  tv:'<rect width="20" height="15" x="2" y="7" rx="2"/><path d="m17 2-5 5-5-5"/>',
+  printer:'<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/>',
+  smartphone:'<rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/>',
+  gamepad:'<path d="M6 11h4M8 9v4M15 12h.01M18 10h.01"/><path d="M17.32 5H6.68a4 4 0 0 0-3.98 3.59C2.6 9.42 2 14.46 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.41-1.41A2 2 0 0 1 9.83 16h4.34a2 2 0 0 1 1.41.59L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.55-.6-6.58-.69-7.26A4 4 0 0 0 17.32 5z"/>',
+  camera:'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  speaker:'<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M12 6h.01"/><circle cx="12" cy="14" r="4"/><path d="M12 14h.01"/>',
+  monitor:'<rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  volume:'<path d="M11 4.7a.7.7 0 0 0-1.2-.5L6.41 7.59A1.4 1.4 0 0 1 5.42 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.42a1.4 1.4 0 0 1 .99.41l3.39 3.39a.7.7 0 0 0 1.2-.5z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.36 18.36a9 9 0 0 0 0-12.73"/>',
+  wifi:'<path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.86a10 10 0 0 1 14 0"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/>',
+  cpu:'<rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/>',
+  receipt:'<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+  mail:'<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+  sliders:'<path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  play:'<path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z" fill="currentColor"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  cable:'<path d="M17 21v-2a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1"/><path d="M19 15V6.5a1 1 0 0 0-7 0v11a1 1 0 0 1-7 0V9"/><path d="M21 21v-2h-4"/><path d="M3 5h4V3"/><path d="M7 5a1 1 0 0 1 1 1v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a1 1 0 0 1 1-1V3"/>',
+  plug:'<path d="M12 22v-5M9 8V2M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/>',
+  file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8M16 17H8M10 9H8"/>',
+  remote:'<rect x="7" y="2" width="10" height="20" rx="3.5"/><circle cx="12" cy="7.5" r="1.8"/><path d="M10.5 13h3M10.5 16h3M10.5 19h3"/>',
+  stand:'<path d="M3 20h18"/><path d="M8 20l2-6h4l2 6"/><rect x="4" y="3" width="16" height="11" rx="1.5"/>',
+  moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  expand:'<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>',
+  zoom:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/>',
+  calc:'<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M8 6h8M16 14v4M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/>',
+  tag:'<path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.42l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1" fill="currentColor"/>',
+  router:'<rect width="20" height="8" x="2" y="14" rx="2"/><path d="M6.01 18H6M10.01 18H10M15 10v4"/><path d="M17.84 7.17a4 4 0 0 0-5.66 0"/><path d="M20.66 4.34a8 8 0 0 0-11.31 0"/>',
+  box:'<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>',
+  rotate:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+  bolt:'<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  bluetooth:'<path d="m7 7 10 10-5 5V2l5 5L7 17"/>',
+  scan:'<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/>',
+  ruler:'<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2M11.5 9.5l2-2M8.5 6.5l2-2M17.5 15.5l2-2"/>',
+  bell:'<path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.96 18 12.5 18 8A6 6 0 0 0 6 8c0 4.5-1.41 5.96-2.74 7.33"/>',
+  plus:'<path d="M5 12h14M12 5v14"/>'
+};
+function ic(name, size = 20, sw = 1.8) {
+  return `<svg class="i" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+}
+
+/* ---------- Product illustrations (placeholders, no brand marks) ---------- */
+const ART = (() => {
+  let n = 0;
+  const id = p => `${p}${++n}`;
+  const shadow = (d, cx, cy, rx, ry = 11, o = .22) => {
+    const g = id('sh');
+    d.push(`<radialGradient id="${g}"><stop offset="0" stop-color="#0B0B0F" stop-opacity="${o}"/><stop offset="1" stop-color="#0B0B0F" stop-opacity="0"/></radialGradient>`);
+    return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#${g})"/>`;
+  };
+  const lin = (d, a, b, vertical = true) => {
+    const g = id('lg');
+    d.push(`<linearGradient id="${g}" x1="0" y1="0" x2="${vertical ? 0 : 1}" y2="${vertical ? 1 : 0}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`);
+    return `url(#${g})`;
+  };
+  const screen = (d, x, y, w, h, hue, r = 2) => {
+    const a = id('sa'), b = id('sb'), c = id('sc'), cl = id('cl');
+    d.push(`<linearGradient id="${a}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${hue},68%,40%)"/><stop offset=".55" stop-color="hsl(${hue + 25},72%,17%)"/><stop offset="1" stop-color="hsl(${hue + 50},60%,7%)"/></linearGradient>`);
+    d.push(`<radialGradient id="${b}"><stop offset="0" stop-color="hsl(${hue - 25},95%,70%)" stop-opacity=".85"/><stop offset="1" stop-color="hsl(${hue - 25},95%,70%)" stop-opacity="0"/></radialGradient>`);
+    d.push(`<radialGradient id="${c}"><stop offset="0" stop-color="hsl(${hue + 60},90%,62%)" stop-opacity=".7"/><stop offset="1" stop-color="hsl(${hue + 60},90%,62%)" stop-opacity="0"/></radialGradient>`);
+    d.push(`<clipPath id="${cl}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/></clipPath>`);
+    return `<g clip-path="url(#${cl})"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#${a})"/><circle cx="${x + w * .72}" cy="${y + h * .3}" r="${h * .78}" fill="url(#${b})"/><circle cx="${x + w * .16}" cy="${y + h * .98}" r="${h * .62}" fill="url(#${c})"/><path d="M${x} ${y}H${x + w * .44}L${x + w * .2} ${y + h}H${x}Z" fill="#fff" opacity=".06"/></g>`;
+  };
+  const tv = (d, x, y, w, h, hue) => {
+    const leg = (sx, dir) => `<path d="M${sx} ${y + h - 3}l${dir * 17} ${h * .15}h${-dir * 8}l${-dir * 15} ${-h * .15}z" fill="#2a2b31"/>`;
+    return leg(x + w * .2, -1) + leg(x + w * .8, 1) +
+      `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#0c0d10"/>` + screen(d, x + 5, y + 5, w - 10, h - 14, hue) +
+      `<rect x="${x}" y="${y + h - 9}" width="${w}" height="9" rx="3" fill="#18191e"/>`;
+  };
+  const bar = (d, x, y, w, h) => {
+    const p = id('dt'), r = h / 2.6;
+    d.push(`<pattern id="${p}" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="2.5" cy="2.5" r="1.05" fill="#454751"/></pattern>`);
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${lin(d, '#383a42', '#0f1013')}"/>` +
+      `<rect x="${x + r * .7}" y="${y + h * .22}" width="${w - r * 1.4}" height="${h * .56}" rx="${h * .24}" fill="url(#${p})"/>` +
+      `<rect x="${x + r}" y="${y + 1.5}" width="${w - 2 * r}" height="1.6" rx=".8" fill="#fff" opacity=".2"/>` +
+      `<circle cx="${x + w - r * 1.3}" cy="${y + h / 2}" r="2" fill="#fff" opacity=".75"/>`;
+  };
+  const laptop = (d, hue, o) => {
+    const base = o.base || 'silver';
+    const c = { silver: ['#eceef2', '#c3c7cf', '#a9aeb8', '#3b3d45'], dark: ['#3d3f47', '#202227', '#15161a', '#0e0f12'], green: ['#dfe8e0', '#b9cabd', '#9aae9f', '#50614f'] }[base];
+    const kc = o.glow ? `hsl(${hue},95%,58%)` : c[3];
+    let kb = '';
+    [234, 239.5, 245, 250.5].forEach(yy => { const t = (yy - 229) / 27, a = 96 - 16 * t, b = 304 + 16 * t; kb += `<line x1="${a + 5}" y1="${yy}" x2="${b - 5}" y2="${yy}" stroke="${kc}" stroke-width="3.8" stroke-dasharray="8.6 2.3" opacity="${o.glow ? .9 : .55}"/>`; });
+    return shadow(d, 200, 276, 176, 10) +
+      `<rect x="100" y="72" width="200" height="152" rx="10" fill="${base === 'silver' ? '#1b1c21' : '#141519'}"/>` + screen(d, 107, 79, 186, 136, hue, 3) +
+      `<circle cx="200" cy="75.6" r="1.3" fill="#3a3c44"/>` +
+      `<path d="M66 224H334L372 262Q374 268 366 268H34Q26 268 28 262Z" fill="${lin(d, c[0], c[1])}"/>` +
+      `<rect x="94" y="221" width="212" height="5" rx="2.5" fill="${c[2]}"/>` +
+      `<path d="M96 229H304L320 256H80Z" fill="${c[2]}" opacity=".32"/>` + kb +
+      `<path d="M178 258.5H222L225 263.5H175Z" fill="${c[2]}" opacity=".6"/>` +
+      `<rect x="28" y="264" width="344" height="5" rx="2.5" fill="${c[2]}"/>`;
+  };
+  const kinds = {
+    tv: (d, o) => shadow(d, 200, 304, 150, 10) + tv(d, 46, 92, 308, 190, o.h),
+    combo: (d, o) => shadow(d, 200, 314, 168, 12) + tv(d, 60, 58, 280, 172, o.h) + bar(d, 70, 258, 260, 36),
+    soundbar: d => shadow(d, 200, 250, 176, 10, .28) + bar(d, 26, 186, 348, 54),
+    'soundbar-zoom': d => `<g transform="translate(-486 -246) scale(2.4)">${bar(d, 26, 160, 348, 54)}</g>`,
+    laptop: (d, o) => laptop(d, o.h, o),
+    aio: (d, o) => shadow(d, 200, 328, 112, 8) +
+      `<path d="M184 258h32l14 58h-60z" fill="${lin(d, '#d9dce2', '#aeb3bc')}"/><rect x="126" y="312" width="148" height="11" rx="5.5" fill="#c3c7cf"/>` +
+      `<rect x="42" y="50" width="316" height="212" rx="9" fill="#101115"/>` + screen(d, 48, 56, 304, 180, o.h) +
+      `<path d="M42 236H358V253Q358 262 349 262H51Q42 262 42 253Z" fill="${lin(d, '#eef0f3', '#c9cdd4')}"/>`,
+    tablet: (d, o) => shadow(d, 200, 318, 160, 10) +
+      (o.folio ? `<rect x="74" y="110" width="280" height="192" rx="20" fill="#56606e"/>` : '') +
+      `<rect x="56" y="94" width="280" height="192" rx="20" fill="#17181c"/>` + screen(d, 66, 104, 260, 172, o.h, 9) +
+      (o.kb ? `<path d="M48 294H344L356 322H36Z" fill="#2a2d34"/><line x1="70" y1="303" x2="330" y2="303" stroke="#454852" stroke-width="4" stroke-dasharray="9 2.5"/><line x1="64" y1="311" x2="336" y2="311" stroke="#454852" stroke-width="4" stroke-dasharray="9 2.5"/>` : '') +
+      `<g transform="rotate(-62 334 250)"><rect x="262" y="246" width="152" height="9" rx="4.5" fill="#e7e9ed"/><rect x="262" y="246" width="20" height="9" rx="4.5" fill="#c3c7cf"/></g>`,
+    printer: d => shadow(d, 200, 298, 156, 10) +
+      `<path d="M120 146 142 94H258L280 146Z" fill="#f5f6f8" stroke="#d6d9df"/>` +
+      `<rect x="60" y="138" width="280" height="152" rx="16" fill="${lin(d, '#3b3d45', '#1d1e23')}"/>` +
+      `<rect x="60" y="138" width="280" height="28" rx="13" fill="#4a4c55"/><rect x="68" y="164" width="264" height="2" fill="#000" opacity=".35"/>` +
+      `<rect x="92" y="182" width="64" height="20" rx="4" fill="#121317"/><rect x="97" y="186" width="24" height="12" rx="2" fill="#7fb8f0" opacity=".75"/><circle cx="136" cy="192" r="3.2" fill="#3a3c44"/><circle cx="147" cy="192" r="3.2" fill="#3a3c44"/>` +
+      `<rect x="102" y="232" width="178" height="12" rx="6" fill="#0d0e11"/><path d="M110 242H272L284 264H98Z" fill="#eceef1"/>` +
+      `<rect x="288" y="186" width="40" height="48" rx="7" fill="#121317"/>` +
+      ['#1aa3d4', '#d4337a', '#efbe2c', '#6b6e78'].map((col, i) => `<rect x="${292.5 + i * 8.8}" y="${196 + i * 3}" width="6" height="${32 - i * 3}" rx="2" fill="${col}"/>`).join(''),
+    laser: d => shadow(d, 200, 298, 128, 10) +
+      `<rect x="90" y="100" width="220" height="190" rx="14" fill="${lin(d, '#fbfbfc', '#dadde3')}"/>` +
+      `<path d="M114 110H286L276 142H124Z" fill="#c9cdd4"/><path d="M134 116H266L260 134H140Z" fill="#fff"/>` +
+      `<rect x="222" y="154" width="70" height="32" rx="6" fill="#22242a"/><rect x="228" y="160" width="32" height="20" rx="2" fill="#8fb7d9"/><circle cx="273" cy="165" r="3.5" fill="#4a4d56"/><circle cx="283" cy="175" r="3.5" fill="#4a4d56"/>` +
+      `<rect x="102" y="200" width="196" height="1.6" fill="#b7bcc5"/>` +
+      `<rect x="102" y="246" width="196" height="32" rx="6" fill="#e4e7ec" stroke="#c9cdd4"/><rect x="176" y="257" width="48" height="7" rx="3.5" fill="#b7bcc5"/>`,
+    monitor: (d, o) => shadow(d, 200, 332, 122, 9) +
+      `<path d="M191 244h18l7 62h-32z" fill="#24262c"/><path d="M200 300 110 328h22L200 312l68 16h22Z" fill="#1b1c21"/>` +
+      `<rect x="32" y="50" width="336" height="200" rx="6" fill="#0c0d10"/>` + screen(d, 36, 54, 328, 186, o.h) +
+      `<rect x="32" y="240" width="336" height="10" rx="3" fill="#15161a"/><rect x="180" y="244" width="40" height="2" rx="1" fill="hsl(${o.h},90%,60%)"/>`,
+    projector: (d, o) => {
+      const bm = id('bm'), le = id('le');
+      d.push(`<linearGradient id="${bm}" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="hsl(${o.h},95%,78%)" stop-opacity=".6"/><stop offset="1" stop-color="hsl(${o.h},95%,78%)" stop-opacity="0"/></linearGradient>`);
+      d.push(`<radialGradient id="${le}" cx=".4" cy=".35"><stop offset="0" stop-color="hsl(${o.h + 180},60%,55%)"/><stop offset=".6" stop-color="#1b2140"/><stop offset="1" stop-color="#07080b"/></radialGradient>`);
+      let v = ''; for (let i = 0; i < 6; i++) v += `<rect x="${246 + i * 10}" y="214" width="4.5" height="42" rx="2.25" fill="#c6cad2"/>`;
+      return `<path d="M146 212 8 140V300L146 244Z" fill="url(#${bm})"/>` + shadow(d, 212, 294, 132, 9) +
+        `<rect x="94" y="174" width="236" height="112" rx="26" fill="${lin(d, '#fbfbfc', '#d8dbe1')}"/><rect x="112" y="179" width="200" height="12" rx="6" fill="#e9ebef"/>` + v +
+        `<circle cx="150" cy="228" r="37" fill="#191a1f"/><circle cx="150" cy="228" r="27" fill="url(#${le})"/><circle cx="141" cy="219" r="6" fill="#fff" opacity=".35"/>`;
+    },
+    mouse: (d, o) => {
+      const rg = id('rg');
+      d.push(`<linearGradient id="${rg}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="hsl(${o.h},95%,60%)"/><stop offset="1" stop-color="hsl(${o.h + 70},95%,62%)"/></linearGradient>`);
+      return shadow(d, 200, 324, 74, 10) +
+        `<path d="M200 82C247 82 264 130 264 196C264 272 241 320 200 320C159 320 136 272 136 196C136 130 153 82 200 82Z" fill="${lin(d, '#3a3c44', '#111216')}"/>` +
+        `<path d="M200 84V170" stroke="#08090b" stroke-width="2"/><path d="M139 178Q200 194 261 178" stroke="#08090b" stroke-width="1.6" fill="none"/>` +
+        `<rect x="193.5" y="110" width="13" height="32" rx="6.5" fill="#34363e"/><rect x="197" y="116" width="6" height="20" rx="3" fill="hsl(${o.h},92%,60%)"/>` +
+        `<path d="M166 262Q200 286 234 262" stroke="url(#${rg})" stroke-width="4.5" fill="none" stroke-linecap="round"/>`;
+    },
+    mic: (d, o) => {
+      const gr = id('gr');
+      d.push(`<pattern id="${gr}" width="4" height="4.2" patternUnits="userSpaceOnUse"><rect width="4" height="1.7" fill="#50535d"/></pattern>`);
+      return shadow(d, 200, 330, 84, 9) +
+        `<ellipse cx="200" cy="318" rx="74" ry="14" fill="#141519"/><ellipse cx="200" cy="313" rx="74" ry="14" fill="#2b2d34"/>` +
+        `<rect x="193" y="226" width="14" height="88" rx="4" fill="#23252b"/>` +
+        `<path d="M154 150V206Q154 236 200 236Q246 236 246 206V150" stroke="#2b2d34" stroke-width="9" fill="none"/>` +
+        `<rect x="163" y="62" width="74" height="160" rx="37" fill="${lin(d, '#2f3138', '#15161a')}"/><rect x="171" y="70" width="58" height="96" rx="29" fill="url(#${gr})"/>` +
+        `<rect x="161" y="170" width="78" height="10" rx="4" fill="hsl(${o.h},92%,58%)"/><circle cx="200" cy="200" r="6" fill="#3a3c44"/>`;
+    },
+    phone: (d, o) => shadow(d, 200, 332, 72, 8) +
+      `<rect x="136" y="54" width="128" height="270" rx="27" fill="#16171b"/><rect x="138.5" y="56.5" width="123" height="265" rx="25" fill="none" stroke="#3b3d45" stroke-width="1.5"/>` +
+      screen(d, 144, 62, 112, 254, o.h, 20) + `<rect x="182" y="70" width="36" height="10" rx="5" fill="#0b0b0e"/>`,
+    gamepad: (d, o) => shadow(d, 200, 306, 144, 10) +
+      `<path d="M128 150H272C312 150 334 176 342 226C350 276 334 304 306 304C284 304 272 290 258 272H142C128 290 116 304 94 304C66 304 50 276 58 226C66 176 88 150 128 150Z" fill="${lin(d, '#3b3d45', '#15161a')}"/>` +
+      `<path d="M112 204h12v12h12v12h-12v12h-12v-12h-12v-12h12z" fill="#0d0e11"/>` +
+      [[282, 204], [298, 220], [266, 220], [282, 236]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="7.5" fill="${i === 0 ? `hsl(${o.h},92%,58%)` : '#0d0e11'}"/>`).join('') +
+      `<circle cx="162" cy="252" r="17" fill="#0d0e11"/><circle cx="162" cy="252" r="11" fill="#2b2d34"/><circle cx="238" cy="252" r="17" fill="#0d0e11"/><circle cx="238" cy="252" r="11" fill="#2b2d34"/>` +
+      `<rect x="184" y="164" width="32" height="4" rx="2" fill="hsl(${o.h},92%,60%)"/>`
+  };
+  return function art(kind, o = {}, label = '') {
+    const d = [];
+    const body = (kinds[kind] || kinds.tv)(d, Object.assign({ h: 225 }, o));
+    const a11y = label ? `role="img" aria-label="${label.replace(/"/g, '&quot;')}"` : 'aria-hidden="true"';
+    return `<svg class="art" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" ${a11y}><defs>${d.join('')}</defs>${body}</svg>`;
+  };
+})();
+
+/* Manufacturer-style infographic placeholder */
+function infoArt(o) {
+  return `<div class="info-art" role="img" aria-label="${o.title}"><span class="ic">${ic(o.icon, 28)}</span><span class="k">Infografía</span><strong>${o.title}</strong><ul>${o.lines.map(l => `<li>${l}</li>`).join('')}</ul></div>`;
+}
+
+/* ---------- Catálogo real de la tienda (precio anterior -> precio actual) ---------- */
+const WA = '573017913140';
+const P = [
+  { id:'sam40', brand:'Samsung', name:'TV 40" QLED + barra de sonido HW-B400F', full:'Televisor Samsung 40" QLED QN40Q5FAAKXZL + Barra de sonido HW-B400F', antes:1999999, ahora:999999, chips:['40" QLED','Full HD','Tizen','Barra 2.0 Ch'], tags:['Combo'], art:{k:'combo',h:235}, rating:5, reviews:1 },
+  { id:'his40', brand:'Hisense', name:'TV 40" A4NV + barra de sonido compacta', full:'Televisor Hisense 40" A4NV FHD Smart TV VIDAA + Barra de sonido compacta', antes:1999999, ahora:935999, chips:['40" Full HD','Smart TV VIDAA','Barra compacta'], tags:['Combo'], art:{k:'combo',h:188} },
+  { id:'sam43c', brand:'Samsung', name:'TV 43" Crystal UHD 4K + barra HW-B400F', full:'TV Samsung Smart 43" Crystal UHD 4K U8500H + Barra HW-B400F', antes:2899999, ahora:1382900, chips:['43" 4K UHD','Crystal UHD','Tizen','Barra 2.0 Ch'], tags:['Combo'], art:{k:'combo',h:205} },
+  { id:'sam43', brand:'Samsung', name:'TV 43" Crystal UHD 4K U8500H', full:'Televisor Samsung 43" U8500H Crystal UHD 4K, Tizen OS', antes:2499999, ahora:1210999, chips:['43"','4K UHD','Tizen OS'], art:{k:'tv',h:212} },
+  { id:'b400', brand:'Samsung', name:'Barra de sonido HW-B400F', full:'Barra de sonido Samsung HW-B400F 2.0 Ch, subwoofer integrado, Bluetooth', antes:499999, ahora:219999, chips:['2.0 Ch','Subwoofer integrado','Bluetooth'], art:{k:'soundbar'} },
+  { id:'hs1000', brand:'Hisense', name:'Barra de sonido HS1000', full:'Barra de sonido Hisense HS1000 120 W, Bluetooth, Dolby Audio', antes:499999, ahora:242999, chips:['120 W','Bluetooth','Dolby Audio'], art:{k:'soundbar'} },
+  { id:'acergo', brand:'Acer', name:'Portátil Aspire Go 15', full:'Portátil Acer Aspire Go AG15-71P · i5-13420H · 8 GB · 512 GB SSD · Green', antes:3999999, ahora:1874900, chips:['Intel i5-13420H','8 GB RAM','512 GB SSD','15.6" FHD'], art:{k:'laptop',h:150,base:'green'}, f:{cpu:'Intel Core i5',ram:'8 GB',ssd:'512 GB',scr:'15.6"',use:['Estudio','Trabajo']} },
+  { id:'dell3530', brand:'Dell', name:'Portátil Inspiron 15 3530', full:'Portátil Dell Inspiron 15 3530 · 15.6" FHD · i5-1334U · 8 GB · 512 GB SSD', antes:3999999, ahora:1979999, chips:['Intel i5-1334U','8 GB RAM','512 GB SSD','15.6" FHD'], art:{k:'laptop',h:208}, f:{cpu:'Intel Core i5',ram:'8 GB',ssd:'512 GB',scr:'15.6"',use:['Trabajo','Estudio']} },
+  { id:'hp15', brand:'HP', name:'Portátil HP 15-fc0029la', full:'Portátil HP 15-fc0029la · Ryzen 5 7520U · 16 GB · 1 TB SSD', antes:4399999, ahora:2199999, chips:['Ryzen 5 7520U','16 GB RAM','1 TB SSD','15.6"'], art:{k:'laptop',h:196}, f:{cpu:'AMD Ryzen 5',ram:'16 GB',ssd:'1 TB',scr:'15.6"',use:['Trabajo','Estudio']} },
+  { id:'hp14', brand:'HP', name:'Portátil HP 14-em0217la', full:'Portátil HP 14-em0217la · Athlon 7120U · 8 GB · 512 GB SSD', antes:2599999, ahora:1298999, chips:['Athlon 7120U','8 GB RAM','512 GB SSD','14"'], art:{k:'laptop',h:252}, f:{cpu:'AMD Athlon',ram:'8 GB',ssd:'512 GB',scr:'14"',use:['Estudio']} },
+  { id:'nitrolite', brand:'Acer', name:'Portátil gamer Nitro Lite', full:'Portátil Gamer Acer Nitro Lite · Core 7-240H · 16 GB · 512 GB · RTX 3050 6 GB', antes:7599999, ahora:3850999, chips:['Core 7 240H','16 GB RAM','512 GB SSD','RTX 3050 6 GB'], tags:['Gamer'], art:{k:'laptop',h:14,base:'dark',glow:true}, f:{cpu:'Intel Core 7',ram:'16 GB',ssd:'512 GB',scr:'16"',use:['Gamer']} },
+  { id:'nitrov15', brand:'Acer', name:'Portátil gamer Nitro V15', full:'Portátil Gamer Acer Nitro V15 · R7-7445HS · 16 GB · RTX 3050 6 GB', antes:6499999, ahora:3149900, chips:['Ryzen 7 7445HS','16 GB RAM','RTX 3050 6 GB','15.6"'], tags:['Gamer'], out:true, art:{k:'laptop',h:350,base:'dark',glow:true}, f:{cpu:'AMD Ryzen 7',ram:'16 GB',ssd:null,scr:'15.6"',use:['Gamer']} },
+  { id:'aiolenovo', brand:'Lenovo', name:'All in One IdeaCentre 27ARR9', full:'AIO Lenovo IdeaCentre 27ARR9 · R7-7735HS · 16 GB · 512 GB SSD', antes:4499999, ahora:2732999, chips:['Ryzen 7 7735HS','16 GB RAM','512 GB SSD','27"'], art:{k:'aio',h:168} },
+  { id:'aiohp', brand:'HP', name:'All in One HP 24-cr0234la', full:'AIO HP 24-cr0234la · R3-7320U · 8 GB · 512 GB SSD', antes:3699999, ahora:1705900, chips:['Ryzen 3 7320U','8 GB RAM','512 GB SSD','24"'], art:{k:'aio',h:222} },
+  { id:'tabpro', brand:'Lenovo', name:'Idea Tab Pro 12.7" · Kit PRO', full:'Tablet Lenovo Idea Tab Pro 12.7" 3K · 8 GB/256 GB · Kit PRO', antes:3399999, ahora:1699900, chips:['12.7" 3K','8 GB RAM','256 GB','Kit PRO'], out:true, art:{k:'tablet',h:262,kb:true} },
+  { id:'tab11', brand:'Lenovo', name:'Idea Tab 11" con lápiz y folio', full:'Tablet Lenovo Idea Tab 11" 2.5K · 8 GB/128 GB · lápiz + folio', antes:1699999, ahora:799900, chips:['11" 2.5K','8 GB RAM','128 GB','Lápiz + folio'], art:{k:'tablet',h:28,folio:true} },
+  { id:'brother', brand:'Brother', name:'Multifuncional DCP-T430W', full:'Impresora multifuncional Brother DCP-T430W · tinta continua · Wi-Fi', antes:1799999, ahora:605900, chips:['Tinta continua','Wi-Fi','Multifuncional'], art:{k:'printer'} },
+  { id:'ricoh', brand:'Ricoh', name:'Multifuncional láser 132 MF', full:'Impresora multifuncional láser Ricoh 132 MF monocromática', antes:4999999, ahora:1683900, chips:['Láser','Monocromática','Multifuncional'], tags:['Últimas unidades'], art:{k:'laser'} },
+  { id:'caixun', brand:'Caixun', name:'Monitor gamer C24F4F 24"', full:'Monitor gaming Caixun C24F4F 24" FHD · 200 Hz · 1 ms · HDR', antes:1099999, ahora:495900, chips:['24" FHD','200 Hz','1 ms','HDR'], tags:['Gamer'], art:{k:'monitor',h:282} },
+  { id:'gunma', brand:'VTA', name:'Proyector LED Gunma 2 HD', full:'Proyector LED VTA Gunma 2 HD · 2.500 lúmenes · Wi-Fi · Android', antes:659999, ahora:330999, chips:['HD','2.500 lúmenes','Wi-Fi','Android'], art:{k:'projector',h:42} },
+  { id:'nmw105', brand:'Acer', name:'Mouse gamer Nitro NMW105', full:'Mouse Gamer Acer Nitro NMW105 · 6400 DPI · RGB', antes:299999, ahora:110999, chips:['6400 DPI','RGB'], tags:['Gamer'], art:{k:'mouse',h:12} },
+  { id:'omkara', brand:'VSG', name:'Micrófono gamer USB Omkara', full:'Micrófono gamer USB VSG Omkara', antes:319999, ahora:165999, chips:['USB'], tags:['Gamer'], art:{k:'mic',h:18} }
+];
+const byId = Object.fromEntries(P.map(p => [p.id, p]));
+
+/* Familias del mega-menú */
+const FAM = [
+  { t:'Computación', i:'laptop', l:['Portátiles','Portátiles gamer','All in One','Monitores','Periféricos','Almacenamiento'] },
+  { t:'TV y Audio', i:'tv', l:['Televisores','Combos TV + barra','Barras de sonido','Proyectores / Video Beams','Audio'] },
+  { t:'Impresión', i:'printer', l:['Tinta continua','Láser','Multifuncionales'] },
+  { t:'Celulares y Tablets', i:'smartphone', l:['Celulares','Tablets','Smartwatches','Accesorios'] },
+  { t:'Gaming', i:'gamepad', l:['Consolas','Accesorios gamer','PC Gaming'] },
+  { t:'Cámaras, Redes y Cables', i:'camera', l:['Cámaras','Redes y Wi-Fi','Cables y adaptadores'] }
+];
+
+/* Tarjetas de categoría del home */
+const TILES = [
+  ['Portátiles','laptop',{h:205}], ['Televisores','tv',{h:230}], ['Combos TV + barra','combo',{h:245}],
+  ['All in One','aio',{h:172}], ['Tablets','tablet',{h:28,folio:true}], ['Impresoras','printer',{}],
+  ['Monitores','monitor',{h:285}], ['Audio','soundbar',{}], ['Gaming','gamepad',{h:12}],
+  ['Video Beams','projector',{h:42}], ['Periféricos','mouse',{h:330}], ['Celulares','phone',{h:258}]
+];
+
+/* Financieras (cuotas de ejemplo) */
+const FIN = {
+  addi:  { name:'Addi', max:24, n:[3,6,9,12,18,24] },
+  sumas: { name:'Sumas Pay', max:36, n:[6,12,18,24,36] },
+  siste: { name:'Sistecrédito', max:6, n:[2,3,4,6] }
+};
+
+/* ---------- Helpers de precio (formato colombiano) ---------- */
+const miles = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const cop = n => '$ ' + miles(n);
+const finPrice = p => Math.round(p.ahora * 1.07 / 100) * 100;          // ejemplo: ~7 % sobre contado
+const cuota = (total, n) => Math.ceil(total / n / 100) * 100;
+const off = p => Math.round((1 - p.ahora / p.antes) * 100);
+
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  const stage = $('#stage'), device = $('#device'), viewport = $('#viewport');
+  const chev = s => ic('down', s).replace('class="i"', 'class="i chev"');
+
+  /* ---------- Íconos y estrellas ---------- */
+  function hydrate(root = document) {
+    $$('i[data-i]', root).forEach(el => {
+      const t = document.createElement('template');
+      t.innerHTML = ic(el.dataset.i, +(el.dataset.s || 20));
+      const svg = t.content.firstElementChild;
+      el.classList.forEach(c => svg.classList.add(c));
+      el.replaceWith(svg);
+    });
+    $$('[data-stars]', root).forEach(el => {
+      const n = +el.dataset.stars;
+      el.innerHTML = Array.from({ length: 5 }, (_, i) => `<svg class="i" width="16" height="16" viewBox="0 0 24 24" fill="${i < n ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5" aria-hidden="true">${ICONS.star}</svg>`).join('');
+      if (el.hasAttribute('aria-label')) el.setAttribute('role', 'img');
+    });
+  }
+
+  /* ---------- Tarjeta de producto ---------- */
+  function card(p) {
+    const pct = off(p), fp = finPrice(p);
+    const badges = [];
+    if (p.out) badges.push('<span class="badge badge-out">Agotado</span>');
+    else if (pct > 0) badges.push(`<span class="badge badge-off">-${pct}&nbsp;%</span>`);
+    (p.tags || []).forEach(t => badges.push(`<span class="badge ${t === 'Combo' ? 'badge-dark' : t === 'Últimas unidades' ? 'badge-warn' : 'badge-soft'}">${t}</span>`));
+    const wa = `https://wa.me/${WA}?text=${encodeURIComponent('Hola, quiero información sobre: ' + p.full)}`;
+    return `<article class="card${p.out ? ' is-out' : ''}">
+      <div class="card-media is-loading"><span class="sk"></span>${ART(p.art.k, p.art, p.full)}<div class="card-badges">${badges.join('')}</div>${p.out ? '<span class="out-flag">Sin unidades</span>' : ''}</div>
+      <div class="card-body">
+        <p class="card-brand">${p.brand}</p>
+        <h3 class="card-title"><a href="#producto" data-go="producto">${p.name}</a></h3>
+        <ul class="chips" aria-label="Especificaciones clave">${p.chips.map(c => `<li>${c}</li>`).join('')}</ul>
+        <div class="card-price">
+          <p class="was"><s><span class="sr-only">Antes </span>${cop(p.antes)}</s></p>
+          <p class="now"><span class="sr-only">Ahora </span>${cop(p.ahora)}</p>
+          ${p.out ? '<p class="fin">Agotado por ahora</p>' : `<p class="fin">o desde <b>${cop(cuota(fp, 24))}</b>/mes con Addi</p>`}
+        </div>
+        <div class="card-actions">
+          ${p.out ? `<button type="button" class="btn btn-ghost" data-notify="${p.id}">${ic('bell', 18)}Avísame</button>` : `<button type="button" class="btn btn-dark" data-add="${p.id}">Agregar</button>`}
+          <a class="sq" href="${wa}" target="_blank" rel="noopener" aria-label="Preguntar por WhatsApp: ${esc(p.name)}">${ic('chat', 20)}</a>
+        </div>
+      </div>
+    </article>`;
+  }
+
+  function renderStatic() {
+    $$('[data-cards]').forEach(el => { el.innerHTML = el.dataset.cards.split(',').map(id => card(byId[id])).join(''); });
+    $('#tiles').innerHTML = TILES.map(([t, k, o]) => `<li class="tile"><a href="#categoria" data-cat="${t}">${ART(k, o)}<span>${t}</span></a></li>`).join('');
+    $$('[data-art]').forEach(el => { el.innerHTML = ART(el.dataset.art, { h: +el.dataset.h || 225 }, el.dataset.label || ''); });
+    $('#mega-grid').innerHTML = FAM.map(f => `<div class="fam"><p class="fam-h"><span class="fam-ic">${ic(f.i, 20)}</span>${f.t}</p><ul>${f.l.map(x => `<li><a href="#categoria" data-cat="${x}">${x}</a></li>`).join('')}</ul></div>`).join('');
+    $('#mfams').innerHTML = FAM.map((f, i) => `<div class="mfam"><button type="button" class="fam-h" aria-expanded="${i === 0}" aria-controls="mf${i}"><span class="fam-ic">${ic(f.i, 20)}</span>${f.t}${chev(18)}</button><ul id="mf${i}"${i === 0 ? '' : ' hidden'}>${f.l.map(x => `<li><a href="#categoria" data-cat="${x}" data-close>${x}</a></li>`).join('')}</ul></div>`).join('');
+  }
+
+  /* Placeholder skeleton: se ve la primera vez que se abre cada vista */
+  const shown = new Set();
+  function settle(root) {
+    $$('.card-media.is-loading', root).forEach((m, i) => {
+      const t = reduce ? 0 : 280 + Math.min(i, 6) * 70 + Math.random() * 220;
+      setTimeout(() => m.classList.remove('is-loading'), t);
+    });
+  }
+
+  /* ---------- Navegación ---------- */
+  const VIEWS = ['inicio', 'categoria', 'producto', 'plan'];
+  function go(view) {
+    if (!VIEWS.includes(view)) return;
+    const plan = view === 'plan';
+    stage.hidden = plan;
+    $('#v-plan').hidden = !plan;
+    $$('.view').forEach(v => { v.hidden = v.dataset.view !== view; });
+    $$('.proto-views a').forEach(a => a.dataset.go === view ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+    toggleMega(false); closeLayers(true); hideSuggest();
+    viewport.scrollTop = 0; $('#v-plan').scrollTop = 0;
+    if (!plan && !shown.has(view)) { shown.add(view); settle($('#v-' + view)); }
+    requestAnimationFrame(updateRails);
+  }
+  function navigate(view) {
+    if (location.hash !== '#' + view) { try { history.pushState(null, '', '#' + view); } catch (e) { /* sandbox */ } }
+    go(view);
+  }
+  window.addEventListener('hashchange', () => go(location.hash.slice(1) || 'inicio'));
+
+  /* ---------- Escritorio / móvil ---------- */
+  function setDevice(d) {
+    stage.classList.toggle('is-phone', d === 'phone');
+    $$('[data-device]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.device === d)));
+    try { localStorage.setItem('gt-device', d); } catch (e) { /* sin almacenamiento */ }
+    viewport.scrollTop = 0;
+  }
+
+  /* ---------- Barra superior rotativa (solo angosto) ---------- */
+  if (!reduce) setInterval(() => {
+    if (device.clientWidth >= 760 || stage.hidden) return;
+    const li = $$('#topbar li'), i = li.findIndex(l => l.classList.contains('is-on'));
+    li[i].classList.remove('is-on'); li[(i + 1) % li.length].classList.add('is-on');
+  }, 3200);
+
+  /* ---------- Mega-menú ---------- */
+  const megaBtn = $('#mega-btn'), mega = $('#mega');
+  function toggleMega(open = mega.hidden) { mega.hidden = !open; megaBtn.setAttribute('aria-expanded', String(open)); }
+  megaBtn.addEventListener('click', () => toggleMega());
+
+  /* ---------- Capas (menú, carrito, filtros) ---------- */
+  let lastFocus = null;
+  function openLayer(name) {
+    const l = $('#layer-' + name); if (!l) return;
+    toggleMega(false); closeLayers(true);
+    lastFocus = document.activeElement;
+    if (name === 'cart') renderCart();
+    l.hidden = false;
+    const f = $('.sheet-h .icon-btn', l); f && f.focus();
+  }
+  function closeLayers(silent) {
+    let was = false;
+    $$('.layer').forEach(l => { if (!l.hidden) { l.hidden = true; was = true; } });
+    if (was && !silent && lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
+  }
+
+  /* ---------- Toast ---------- */
+  let toastT;
+  function toast(msg) {
+    const slot = $('#toast-slot');
+    slot.innerHTML = `<div class="toast">${ic('check', 18)}<span>${msg}</span></div>`;
+    clearTimeout(toastT); toastT = setTimeout(() => { slot.innerHTML = ''; }, 3800);
+  }
+
+  /* ---------- Carrito ---------- */
+  const cart = new Map();
+  function addToCart(id, silent) {
+    cart.set(id, (cart.get(id) || 0) + 1);
+    const n = [...cart.values()].reduce((a, b) => a + b, 0), c = $('#cart-count');
+    c.textContent = n; c.classList.add('bump'); setTimeout(() => c.classList.remove('bump'), 220);
+    $('#cart-btn').setAttribute('aria-label', `Carrito, ${n} producto${n === 1 ? '' : 's'}`);
+    if (!silent) toast(`Agregaste «${byId[id].name}» al carrito`);
+  }
+  function renderCart() {
+    const body = $('#cart-body'), foot = $('#cart-foot');
+    if (!cart.size) {
+      body.innerHTML = `<div class="cart-empty">${ic('cart', 40, 1.4)}<strong>Tu carrito está vacío</strong><p>Agrega productos desde el catálogo.</p></div>`;
+      foot.innerHTML = '<button type="button" class="btn btn-dark btn-block" data-close>Seguir comprando</button>';
+      return;
+    }
+    let sub = 0, fin = 0;
+    body.innerHTML = [...cart].map(([id, q]) => {
+      const p = byId[id]; sub += p.ahora * q; fin += finPrice(p) * q;
+      return `<div class="citem"><div class="c-art">${ART(p.art.k, p.art)}</div><div><strong>${p.name}</strong><small>${p.brand} · Cantidad: ${q}</small><br><button type="button" class="rm" data-rm="${id}">Quitar</button></div><div class="c-p">${cop(p.ahora * q)}</div></div>`;
+    }).join('');
+    foot.innerHTML = `<div class="totals"><div><span>Subtotal de contado</span><b class="num">${cop(sub)}</b></div><div><span>Envío</span><span class="free">Gratis</span></div><div class="grand"><span>Total</span><span class="num">${cop(sub)}</span></div><div class="fin-t"><span>Con financiación (ejemplo)</span><span class="num">desde ${cop(cuota(fin, 24))}/mes</span></div></div><button type="button" class="btn btn-primary btn-lg btn-block" data-toast="Aquí sigue el checkout de WooCommerce con Wompi, PSE, Nequi, Addi y Sumas Pay.">Ir a pagar</button>`;
+  }
+
+  /* ---------- Buscador con sugerencias ---------- */
+  const q = $('#q'), sug = $('#suggest');
+  const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  function hideSuggest() { sug.hidden = true; }
+  q.addEventListener('input', () => {
+    const v = norm(q.value.trim());
+    if (!v) return hideSuggest();
+    const words = v.split(/\s+/);
+    const hits = P.filter(p => words.every(w => norm(p.full + ' ' + p.brand).includes(w))).slice(0, 6);
+    sug.innerHTML = hits.length
+      ? hits.map(p => `<a href="#producto" data-go="producto" role="option"><span class="s-art">${ART(p.art.k, p.art)}</span><span class="s-name">${p.name}<small>${p.brand}${p.out ? ' · Agotado' : ''}</small></span><span class="s-price">${cop(p.ahora)}</span></a>`).join('')
+      : `<p class="s-empty">No encontramos «${esc(q.value.trim())}». Prueba con otra palabra o escríbenos por WhatsApp.</p>`;
+    sug.hidden = false;
+  });
+  $('#search').addEventListener('submit', e => {
+    e.preventDefault(); hideSuggest();
+    navigate('categoria');
+    if (q.value.trim()) toast('Los resultados de búsqueda usan la misma plantilla de la categoría.');
+  });
+
+  /* ---------- Carruseles ---------- */
+  function updateRails() {
+    $$('.rail').forEach(r => {
+      const t = $('.rail-track', r), pv = $('.prev', r), nx = $('.next', r);
+      if (!t || !pv) return;
+      pv.disabled = t.scrollLeft < 4;
+      nx.disabled = t.scrollLeft + t.clientWidth >= t.scrollWidth - 4;
+    });
+  }
+  function bindRails() {
+    $$('.rail').forEach(r => {
+      const t = $('.rail-track', r);
+      $('.prev', r).addEventListener('click', () => t.scrollBy({ left: -t.clientWidth * .9, behavior: reduce ? 'auto' : 'smooth' }));
+      $('.next', r).addEventListener('click', () => t.scrollBy({ left: t.clientWidth * .9, behavior: reduce ? 'auto' : 'smooth' }));
+      let raf; t.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(updateRails); }, { passive: true });
+    });
+    if ('ResizeObserver' in window) new ResizeObserver(updateRails).observe(device);
+  }
+
+  /* ---------- Categoría: filtros y orden ---------- */
+  const LAPTOPS = ['acergo', 'dell3530', 'hp15', 'hp14', 'nitrolite', 'nitrov15'].map(id => byId[id]);
+  const GROUPS = [
+    { k: 'brand', t: 'Marca', get: p => [p.brand] },
+    { k: 'price', t: 'Precio', opts: [['lt', 'Hasta $ 1.500.000', p => p.ahora < 1500000], ['mid', '$ 1.500.000 a $ 2.500.000', p => p.ahora >= 1500000 && p.ahora <= 2500000], ['gt', 'Más de $ 2.500.000', p => p.ahora > 2500000]] },
+    { k: 'cpu', t: 'Procesador', get: p => [p.f.cpu] },
+    { k: 'ram', t: 'Memoria RAM', get: p => [p.f.ram], order: ['8 GB', '16 GB'] },
+    { k: 'ssd', t: 'Almacenamiento', get: p => p.f.ssd ? [p.f.ssd] : [], order: ['512 GB', '1 TB'] },
+    { k: 'scr', t: 'Pantalla', get: p => [p.f.scr], order: ['14"', '15.6"', '16"'] },
+    { k: 'use', t: 'Uso', get: p => p.f.use, order: ['Estudio', 'Trabajo', 'Gamer'] },
+    { k: 'avail', t: 'Disponibilidad', opts: [['in', 'Solo disponibles', p => !p.out]] }
+  ];
+  const F = Object.fromEntries(GROUPS.map(g => [g.k, new Set()]));
+  let sortBy = 'top';
+  const optionsOf = g => {
+    if (g.opts) return g.opts.map(([v, l, fn]) => ({ v, l, n: LAPTOPS.filter(fn).length }));
+    const m = new Map();
+    LAPTOPS.forEach(p => g.get(p).forEach(v => m.set(v, (m.get(v) || 0) + 1)));
+    const keys = g.order ? g.order.filter(v => m.has(v)) : [...m.keys()].sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+    return keys.map(v => ({ v, l: v, n: m.get(v) }));
+  };
+  const labelOf = (k, v) => { const g = GROUPS.find(x => x.k === k); return g.opts ? g.opts.find(o => o[0] === v)[1] : v; };
+  const match = p => GROUPS.every(g => {
+    const s = F[g.k]; if (!s.size) return true;
+    if (g.opts) return [...s].some(v => g.opts.find(o => o[0] === v)[2](p));
+    return g.get(p).some(v => s.has(v));
+  });
+  function filterHTML(px) {
+    return GROUPS.map(g => `<details class="fgroup" open><summary>${g.t}${chev(18)}</summary><div class="fopts">${optionsOf(g).map((o, i) =>
+      `<label class="fopt" for="f-${px}-${g.k}-${i}"><input type="checkbox" id="f-${px}-${g.k}-${i}" data-f="${g.k}" value="${esc(o.v)}"><span>${o.l}</span><span class="c">${o.n}</span></label>`).join('')}</div></details>`).join('');
+  }
+  function syncInputs() {
+    $$('[data-f]').forEach(i => { i.checked = F[i.dataset.f].has(i.value); });
+    $$('.usechip').forEach(b => b.setAttribute('aria-pressed', String(F.use.has(b.dataset.use))));
+  }
+  function renderGrid() {
+    const sorters = { asc: (a, b) => a.ahora - b.ahora, desc: (a, b) => b.ahora - a.ahora, off: (a, b) => off(b) - off(a) };
+    let list = LAPTOPS.filter(match);
+    if (sorters[sortBy]) list.sort(sorters[sortBy]);
+    list.sort((a, b) => (a.out ? 1 : 0) - (b.out ? 1 : 0));
+    const grid = $('#cat-grid');
+    grid.innerHTML = list.length ? list.map(card).join('')
+      : `<div class="empty">${ic('search', 32, 1.5)}<strong>No hay portátiles con esos filtros</strong><p>Quita alguno de los filtros para ver más opciones.</p><button type="button" class="btn btn-dark" data-clear>Limpiar filtros</button></div>`;
+    if (shown.has('categoria')) $$('.is-loading', grid).forEach(m => m.classList.remove('is-loading'));
+    $('#count').innerHTML = `<b>${list.length}</b> ${list.length === 1 ? 'portátil' : 'portátiles'}`;
+    const active = GROUPS.flatMap(g => [...F[g.k]].map(v => [g.k, v]));
+    const af = $('#active-f');
+    af.hidden = !active.length;
+    af.innerHTML = active.map(([k, v]) => `<button type="button" data-unf="${k}" data-v="${esc(v)}" aria-label="Quitar filtro ${esc(labelOf(k, v))}">${labelOf(k, v)}${ic('x', 14)}</button>`).join('') + (active.length ? '<button type="button" class="clear" data-clear>Limpiar todo</button>' : '');
+    $('#fcount').textContent = active.length ? ` (${active.length})` : '';
+    $('#flt-apply').textContent = `Ver ${list.length} ${list.length === 1 ? 'producto' : 'productos'}`;
+  }
+  function clearFilters() { Object.values(F).forEach(s => s.clear()); syncInputs(); renderGrid(); }
+
+  /* ---------- Producto: galería ---------- */
+  const SLIDES = [
+    { kind: 'Foto principal', html: () => ART('combo', { h: 235 }, 'Combo Samsung 40" QLED con barra de sonido HW-B400F, vista frontal') },
+    { kind: 'Televisor', html: () => ART('tv', { h: 235 }, 'Televisor Samsung 40" QLED de frente') },
+    { kind: 'Barra de sonido', html: () => ART('soundbar', {}, 'Barra de sonido HW-B400F de frente') },
+    { kind: 'Detalle', html: () => ART('soundbar-zoom', {}, 'Detalle de la rejilla y el indicador de la barra') },
+    { kind: 'Infografía', html: () => infoArt({ icon: 'sun', title: 'Color QLED con Quantum Dot', lines: ['40" Full HD 1920 × 1080', 'HDR', 'Tizen · One UI'] }) },
+    { kind: 'Infografía', html: () => infoArt({ icon: 'volume', title: 'Sonido Dolby 2.0 con woofer integrado', lines: ['OTS Lite en el televisor', 'Modo noche y mejora de voz'] }) },
+    { kind: 'Infografía', html: () => infoArt({ icon: 'cable', title: 'Conecta todo con un solo cable', lines: ['HDMI ARC · Entrada óptica', 'Bluetooth 4.2 · USB'] }) },
+    { kind: 'Infografía', html: () => infoArt({ icon: 'ruler', title: 'Barra de 641 × 66,5 × 107 mm', lines: ['Peso 2,1 kg', 'Color Titan Black'] }) }
+  ];
+  let gi = 0;
+  const gMain = $('#gal-main'), gStage = $('#gal-stage');
+  function setSlide(i) {
+    gi = (i + SLIDES.length) % SLIDES.length;
+    const s = SLIDES[gi];
+    gStage.innerHTML = s.html();
+    $('#gal-kind').innerHTML = `<span class="badge ${s.kind === 'Infografía' ? 'badge-dark' : 'badge-soft'}">${s.kind}</span>`;
+    $('#gal-count').textContent = `${gi + 1} / ${SLIDES.length}`;
+    $$('.thumb').forEach((t, k) => t.setAttribute('aria-current', String(k === gi)));
+    gMain.classList.toggle('zoomable', s.kind !== 'Infografía');
+    gMain.classList.remove('is-zoom');
+  }
+  function bindGallery() {
+    $('#thumbs').innerHTML = SLIDES.map((s, i) => `<button type="button" class="thumb" data-slide="${i}" aria-label="Imagen ${i + 1} de ${SLIDES.length}: ${s.kind}">${s.html()}</button>`).join('');
+    $$('.thumb .info-art').forEach(el => el.removeAttribute('role'));
+    $('#gal-prev').addEventListener('click', () => setSlide(gi - 1));
+    $('#gal-next').addEventListener('click', () => setSlide(gi + 1));
+    gMain.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') setSlide(gi - 1); if (e.key === 'ArrowRight') setSlide(gi + 1); });
+    gMain.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse' || !gMain.classList.contains('zoomable') || e.target.closest('button')) { gMain.classList.remove('is-zoom'); return; }
+      const r = gMain.getBoundingClientRect(), a = $('.art', gStage);
+      if (a) a.style.transformOrigin = `${(e.clientX - r.left) / r.width * 100}% ${(e.clientY - r.top) / r.height * 100}%`;
+      gMain.classList.add('is-zoom');
+    });
+    gMain.addEventListener('pointerleave', () => gMain.classList.remove('is-zoom'));
+    let x0 = null;
+    gMain.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+    gMain.addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) setSlide(gi + (dx < 0 ? 1 : -1)); x0 = null; });
+    setSlide(0);
+  }
+
+  /* ---------- Producto: calculadora de cuotas ---------- */
+  const FINP = finPrice(byId.sam40);
+  let calcN = 12;
+  const curFin = () => FIN[$('input[name="fin"]:checked').value];
+  function renderCalc() {
+    const f = curFin();
+    if (!f.n.includes(calcN)) calcN = f.n.includes(12) ? 12 : f.n[f.n.length - 1];
+    $('#n-opts').innerHTML = f.n.map(n => `<label class="opt"><input type="radio" name="n" value="${n}"${n === calcN ? ' checked' : ''}><span>${n}<span class="sr-only"> cuotas</span></span></label>`).join('');
+    renderCalcOut();
+  }
+  function renderCalcOut() {
+    const f = curFin(), m = cuota(FINP, calcN);
+    $('#calc-l').textContent = `Con ${f.name} pagarías aprox.`;
+    $('#calc-v').innerHTML = `${cop(m)} <small>/mes</small>`;
+    $('#calc-tt').textContent = `${calcN} cuotas · total aprox. ${cop(m * calcN)}`;
+  }
+
+  /* ---------- Eventos globales ---------- */
+  document.addEventListener('click', e => {
+    if (!mega.hidden && !e.target.closest('#mega, #mega-btn')) toggleMega(false);
+    if (!sug.hidden && !e.target.closest('#search')) hideSuggest();
+    const el = e.target.closest('a, button, [data-close]');
+    if (!el) return;
+    const d = el.dataset;
+    if ('open' in d) { e.preventDefault(); openLayer(d.open); return; }
+    if ('device' in d) { setDevice(d.device); return; }
+    if ('slide' in d) { setSlide(+d.slide); return; }
+    if ('add' in d) { addToCart(d.add); return; }
+    if ('buy' in d) { addToCart(d.buy, true); openLayer('cart'); return; }
+    if ('rm' in d) { cart.delete(d.rm); const n = [...cart.values()].reduce((a, b) => a + b, 0); $('#cart-count').textContent = n; $('#cart-btn').setAttribute('aria-label', `Carrito, ${n} producto${n === 1 ? '' : 's'}`); renderCart(); return; }
+    if ('notify' in d) { toast('Te avisaremos por WhatsApp cuando vuelva a llegar.'); return; }
+    if ('clear' in d) { clearFilters(); return; }
+    if ('unf' in d) { F[d.unf].delete(d.v); syncInputs(); renderGrid(); return; }
+    if ('skip' in d) { e.preventDefault(); $('#main').focus(); return; }
+    if ('scroll' in d) { e.preventDefault(); const t = document.getElementById(d.scroll); t && t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); return; }
+    if (el.classList.contains('fam-h') && el.closest('.mfam')) { const open = el.getAttribute('aria-expanded') !== 'true'; el.setAttribute('aria-expanded', String(open)); $('#' + el.getAttribute('aria-controls')).hidden = !open; return; }
+    if ('close' in d) closeLayers();
+    if ('toast' in d) { e.preventDefault(); toast(d.toast); return; }
+    if ('cat' in d) {
+      e.preventDefault(); navigate('categoria');
+      if (d.cat !== 'Portátiles') toast(`Vista de ejemplo: la plantilla de categoría está armada con Portátiles; «${d.cat}» usaría la misma.`);
+      return;
+    }
+    if ('go' in d) { e.preventDefault(); if (el.closest('#suggest')) { q.value = ''; hideSuggest(); } navigate(d.go); }
+  });
+  document.addEventListener('change', e => {
+    const el = e.target;
+    if (el.matches('[data-f]')) { const s = F[el.dataset.f]; el.checked ? s.add(el.value) : s.delete(el.value); syncInputs(); renderGrid(); }
+    else if (el.id === 'sort') { sortBy = el.value; renderGrid(); }
+    else if (el.name === 'fin') renderCalc();
+    else if (el.name === 'n') { calcN = +el.value; renderCalcOut(); }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (!sug.hidden) { hideSuggest(); return; }
+    if (!mega.hidden) { toggleMega(false); megaBtn.focus(); return; }
+    closeLayers();
+  });
+  $$('.usechip').forEach(b => b.addEventListener('click', () => {
+    const v = b.dataset.use; F.use.has(v) ? F.use.delete(v) : F.use.add(v); syncInputs(); renderGrid();
+  }));
+  $('#video-btn').addEventListener('click', () => {
+    $('#video-slot').innerHTML = `<div class="video" role="region" aria-label="Video del producto"><div class="video-msg">${ic('play', 28)}<strong>Aquí se carga el video del fabricante</strong><p>En la tienda real: archivo liviano o YouTube, con póster, sin reproducción automática y lejos del botón de compra.</p></div></div>`;
+  });
+
+  /* ---------- Inicio ---------- */
+  hydrate();
+  renderStatic();
+  $('#filters-d').innerHTML = filterHTML('d');
+  $('#filters-m').innerHTML = filterHTML('m');
+  renderGrid();
+  bindRails();
+  bindGallery();
+  renderCalc();
+  hydrate();
+  let saved = 'desktop';
+  try { saved = localStorage.getItem('gt-device') || 'desktop'; } catch (e) { /* sin almacenamiento */ }
+  setDevice(innerWidth < 720 ? 'desktop' : saved);
+  go(VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'inicio');
+})();
+
+</script>
+</body>
+</html>
