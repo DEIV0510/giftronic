@@ -6,7 +6,7 @@ function contrast(hex, bg = '#FFFFFF') {
   const a = L(hex), b = L(bg); return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
 }
 function viewDesignSystem() {
-  const colors = [['--color-ink','#0B0B0F','Header, footer, texto principal'],['--color-accent','#D24410','CTA, precios, badges'],['--color-accent-hover','#B3380B','Hover y activo'],['--color-brand','#FF6B00','Logo y decoración sobre negro'],['--color-surface','#FFFFFF','Tarjetas'],['--color-bg','#F6F7F9','Fondo general'],['--color-muted','#6B7280','Texto secundario sobre blanco'],['--color-border','#E5E7EB','Divisores'],['--color-success','#0E7A3E','Disponible, envío gratis'],['--color-warning','#8A4B00','Últimas unidades, ejemplos'],['--color-danger','#B42318','Errores'],['--color-star','#F2A20C','Estrellas']];
+  const colors = [['--color-ink','#0B0B0F','Header, footer, texto principal'],['--color-accent','#D24410','CTA principal, precio de la ficha, descuento'],['--color-accent-hover','#B3380B','Hover y activo'],['--color-brand','#FF6B00','Logo y decoración sobre negro'],['--color-surface','#FFFFFF','Tarjetas'],['--color-bg','#F6F7F9','Fondo general'],['--color-muted','#6B7280','Texto secundario sobre blanco'],['--color-border','#E5E7EB','Divisores'],['--color-success','#0E7A3E','Disponible, envío gratis'],['--color-warning','#8A4B00','Últimas unidades, ejemplos'],['--color-danger','#B42318','Errores'],['--color-star','#F2A20C','Estrellas']];
   const sample = byId[8], out = byId[14];
   const cardState = (p, cls, lbl) => `<div><p class="lbl">${lbl}</p>${card(p).replace('class="card', 'class="card ' + cls).replace(' is-loading', cls === 'is-skeleton' ? ' is-loading' : '')}</div>`;
   return {
@@ -111,7 +111,7 @@ function viewPlan() {
 
       <h2>Decisiones de diseño</h2><p>Supuestos y decisiones tomadas donde el brief dejaba margen.</p>
       <ol class="decisions">
-        <li><b>Esquinas rectas y naranja accesible.</b> Todos los componentes van a 90° (radio 0) para una imagen más seria. Además, #FF6A00 da 2,9:1 sobre blanco y no cumple AA; los CTA, precios y badges usan #D24410 (4,6:1). El naranja del logo queda para el logo y fondos oscuros.</li>
+        <li><b>Esquinas rectas y naranja con disciplina.</b> Todos los componentes van a 90° (radio 0). El naranja se reserva para la acción principal, el descuento y el precio de la ficha; los precios de los listados, íconos y etiquetas van en negro y grises. Además, #FF6A00 da 2,9:1 sobre blanco y no cumple AA; los CTA, precios y badges usan #D24410 (4,6:1). El naranja del logo queda para el logo y fondos oscuros.</li>
         <li><b>La galería queda fija, no la columna de compra.</b> Con 12 bloques la columna es más alta que la pantalla; fijarla escondería el final. La galería (más corta) acompaña el scroll.</li>
         <li><b>Ficha móvil compacta.</b> Galería de 220 px y nombre, precios y stock en el primer pantallazo; el CTA vive en la barra fija inferior.</li>
         <li><b>Barra de navegación inferior en móvil.</b> Inicio, Categorías, Buscar, Carrito y Cuenta al alcance del pulgar. Se oculta en la ficha (la reemplaza la barra de compra) y en el checkout.</li>

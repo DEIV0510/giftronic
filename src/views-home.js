@@ -51,7 +51,7 @@ function viewHome() {
 
     <section class="wrap sec" aria-labelledby="h-cats">
       ${sectionHead('h-cats', 'Compra por categoría', 'Encuentra rápido lo que buscas.', '<a class="link" href="#/categoria/todo">Ver todo el catálogo' + ic('right', 16) + '</a>')}
-      <ul class="tiles">${tiles.map(([s, t, k, o]) => `<li class="tile"><a href="#/categoria/${s}">${ART(k, o)}<span>${t}<small>${count(s)} productos</small></span></a></li>`).join('')}</ul>
+      <ul class="tiles">${tiles.map(([s, t, k, o]) => `<li class="tile"><a href="#/categoria/${s}">${ART(k, o)}<span>${t}<small>${count(s)} ${count(s) === 1 ? 'producto' : 'productos'}</small></span></a></li>`).join('')}</ul>
     </section>
 
     <section class="wrap sec" aria-labelledby="h-deals">
