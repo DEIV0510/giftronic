@@ -41,9 +41,11 @@ function highlightsOf(p) {
   return h;
 }
 function benefitsOf(p) {
-  if (p.benefits) return p.benefits.map(([k, t, d]) => [ART(k, k === 'tv' || k === 'combo' ? p.art : {}, ''), t, d]);
+  const pics = [artOf(p), ...(IMG_MODE === 'local' ? (p.gal || []).slice(2, 5).map(u => galImg(p, u, '', true)) : [])];
+  const pic = i => pics[i % pics.length];
+  if (p.benefits) return p.benefits.map(([k, t, d], i) => [pic(i), t, d]);
   const get = k => (p.spec || []).find(s => s[0] === k)?.[1];
-  const main = artOf(p), det = art2Of(p), b = [];
+  const main = pic(0), det = pic(1), b = [];
   if (get('Procesador')) b.push([main, 'Rendimiento para el día a día', `Procesador ${get('Procesador')} para clases, oficina y varias tareas a la vez.`]);
   if (/SSD/.test(get('Almacenamiento') || '')) b.push([det, 'Enciende y abre programas rápido', `Disco ${get('Almacenamiento')}: mucho más ágil que un disco mecánico.`]);
   if (get('Gráficos')) b.push([det, 'Gráficos dedicados', `${get('Gráficos')} para jugar y editar con más fluidez.`]);
@@ -75,8 +77,10 @@ function calcHTML(base, label) {
   </div>`;
 }
 
+/* Accesorios compatibles: los curados o, por tipo de producto, mouse + micrófono (computadores) y barras (TV) */
+const accOf = p => p.acc || (['portatiles','portatiles-gamer','all-in-one','pc-escritorio','pc-gaming','monitores'].includes(p.cat) ? [24, 25] : p.cat === 'televisores' ? [6, 7] : []);
 function bundleHTML(p) {
-  const acc = (p.acc || []).map(id => byId[id]).filter(a => a && !isOut(a));
+  const acc = accOf(p).map(id => byId[id]).filter(a => a && !isOut(a));
   if (!acc.length) return `<ul class="suggest-cats">${[['stand','Soportes de pared','Para televisores de 32" a 55"','soporte'],['cable','Cables HDMI','Para consola, PC o decodificador','hdmi'],['bolt','Reguladores de voltaje','Protege tu TV y tu barra','regulador']].map(([i, t, d, q]) => `<li><a href="#/buscar?q=${q}"><span class="ic">${ic(i, 24)}</span><span><strong>${t}</strong><span>${d}</span></span></a></li>`).join('')}</ul>`;
   const all = [p, ...acc], main = priceOf(p, S.pdp.v).precio;
   return `<div class="bundle"><ul class="bundle-items">${all.map((x, i) => `<li><label><input type="checkbox" class="cb" data-ch="bundle" value="${x.id}" ${i === 0 ? 'checked disabled' : 'checked'}><span>${artOf(x)}</span><span><strong>${i === 0 ? 'Este producto' : x.name}</strong><small>${i === 0 ? p.name : x.brand}</small></span><span class="price">${cop(i === 0 ? main : x.precio)}</span></label></li>`).join('')}</ul>
@@ -143,8 +147,8 @@ function viewProduct(slug) {
           : stateHTML({ icon:'star', title:'Aún no hay reseñas', text:'Si ya lo compraste, cuéntale a otros clientes cómo te fue.' })}
       </section>
 
-${(p.acc || []).length || ['combos-tv', 'televisores'].includes(p.cat) ? `<section class="psec" aria-labelledby="h-comp">
-        <div class="psec-h"><div><h2 id="h-comp">Completa tu compra</h2><p>${(p.acc || []).length ? 'Accesorios compatibles, con el total combinado.' : 'Accesorios que suelen llevarse con un televisor.'}</p></div></div>
+${accOf(p).length || p.cat === 'combos-tv' ? `<section class="psec" aria-labelledby="h-comp">
+        <div class="psec-h"><div><h2 id="h-comp">Completa tu compra</h2><p>${accOf(p).length ? 'Accesorios compatibles, con el total combinado.' : 'Accesorios que suelen llevarse con un televisor.'}</p></div></div>
         ${bundleHTML(p)}
       </section>` : ''}
 
@@ -153,8 +157,8 @@ ${(p.acc || []).length || ['combos-tv', 'televisores'].includes(p.cat) ? `<secti
     after: root => {
       settle(root);
       setLD({ '@context':'https://schema.org', '@graph':[
-        { '@type':'Product', name:p.name, sku:skuOf(p, S.pdp.v), brand:{ '@type':'Brand', name:p.brand }, description:p.type, image:'https://giftronic04.com/wp-content/uploads/' + p.slug + '.webp',
-          offers:{ '@type':'Offer', priceCurrency:'COP', price:pr.precio, availability:pr.stock === 0 ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock', url:'https://giftronic04.com/producto/' + p.slug + '/', seller:{ '@type':'Organization', name:'Giftronic04.com' } },
+        { '@type':'Product', name:p.name, sku:skuOf(p, S.pdp.v), brand:{ '@type':'Brand', name:p.brand }, description:p.type, image:p.imgUrl,
+          offers:{ '@type':'Offer', priceCurrency:'COP', price:pr.precio, availability:pr.stock === 0 ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock', url:(p.url || 'https://giftronic04.com/producto/' + p.slug + '/'), seller:{ '@type':'Organization', name:'Giftronic04.com' } },
           ...(p.reviews ? { aggregateRating:{ '@type':'AggregateRating', ratingValue:p.rating, reviewCount:p.reviews } } : {}) },
         { '@type':'BreadcrumbList', itemListElement:[['Inicio', ''], [cat.name, 'categoria/' + catOf(p) + '/'], [p.name, 'producto/' + p.slug + '/']].map(([n, u], i) => ({ '@type':'ListItem', position:i + 1, name:n, item:'https://giftronic04.com/' + u })) }
       ] });
@@ -169,11 +173,10 @@ function setSlide(p, i) {
   S.pdp.slide = (i + sl.length) % sl.length;
   const s = sl[S.pdp.slide], main = $('#gal-main');
   if (!main) return;
-  $('#gal-stage').innerHTML = slideHTML(s, p.name);
-  $('#gal-kind').innerHTML = `<span class="badge ${s.info ? 'badge-combo' : 'badge-gamer'}">${s.kind}</span>`;
-  $('#gal-count').textContent = `${S.pdp.slide + 1} / ${sl.length}`;
+  $('#gal-stage').innerHTML = slideHTML(s, p, p.name);
+  const cnt = $('#gal-count'); if (cnt) cnt.textContent = `${S.pdp.slide + 1} / ${sl.length}`;
   $$('.thumb').forEach((t, k) => t.setAttribute('aria-current', String(k === S.pdp.slide)));
-  main.classList.toggle('zoomable', !s.info); main.classList.remove('is-zoom');
+  main.classList.remove('is-zoom');
 }
 function bindGallery(p) {
   const main = $('#gal-main'), track = $('#gal-m-track');
@@ -188,11 +191,9 @@ function bindGallery(p) {
     main.addEventListener('pointerleave', () => main.classList.remove('is-zoom'));
   }
   if (track) {
-    const sl = slidesFor(p);
     track.addEventListener('scroll', () => {
       const i = Math.round(track.scrollLeft / track.clientWidth);
       $$('.gal-dots i').forEach((d, k) => d.classList.toggle('on', k === i));
-      const k = $('#gal-m-kind'); if (k && sl[i]) k.textContent = sl[i].kind;
     }, { passive:true });
   }
 }

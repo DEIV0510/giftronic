@@ -13,8 +13,32 @@ const pHref = p => `#/producto/${p.slug}`;
 
 /* Recortes para la segunda imagen (detalle) de cada tipo de producto */
 const CROPS = { combo:'190 180 170 170', tv:'170 70 190 190', soundbar:'200 150 180 180', 'soundbar-zoom':'0 0 400 400', laptop:'70 165 190 190', aio:'140 180 160 160', tablet:'215 150 170 170', printer:'245 150 110 110', laser:'195 125 125 125', monitor:'130 170 180 180', projector:'86 164 130 130', mouse:'140 80 140 140', mic:'135 50 130 130', phone:'130 40 150 150', gamepad:'200 150 150 150' };
-const artOf = (p, label = '') => ART(p.art.k, p.art, label);
-const art2Of = p => ART(p.art.k, p.art, '', CROPS[p.art.k] || '0 0 400 400');
+/* Fotos reales: en local salen de img/<id>.webp; en el Artifact, de img-pack.json (data URI).
+   Si una foto no carga se muestra la silueta de la categoría con el nombre del modelo. */
+let PACK = null;
+const imgSrc = p => IMG_MODE === 'local' ? `img/${p.id}.webp` : (PACK && PACK[p.id]) || '';
+function artOf(p, label = '', opt = {}) {
+  if (!p.id || p.noLocal) return ART(p.art.k, p.art, label);
+  const src = imgSrc(p);
+  return `<img class="art art-img" data-pid="${p.id}"${src ? ` src="${src}"` : ''} alt="${esc(label)}" width="800" height="800" ${opt.eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`;
+}
+/* Segunda foto (hover en escritorio): se pide solo al pasar el mouse */
+function art2Of(p) {
+  const u = IMG_MODE === 'local' ? (p.gal || [])[1] : null;
+  return u ? `<img class="art art-img" data-src2="${esc(u)}" alt="" width="800" height="800" decoding="async">` : '';
+}
+/* Foto remota de la galería de la tienda. En la galería, si falla se descarta (data-gal);
+   en otros bloques se reemplaza por la foto principal (data-fbmain). */
+const galImg = (p, url, label = '', keepMain = false) => `<img class="art art-img" src="${esc(url)}" ${keepMain ? `data-fbmain="${p.id}"` : `data-gal="${esc(url)}"`} alt="${esc(label)}" width="800" height="800" loading="lazy" decoding="async">`;
+function imgFallback(img) {
+  const p = byId[img.dataset.pid];
+  if (!p) return img.remove();
+  const fb = document.createElement('span');
+  fb.className = 'art img-fb';
+  fb.innerHTML = ART(p.art.k, p.art, '') + `<span>${esc(p.model || p.name)}</span>`;
+  img.replaceWith(fb);
+  const m = fb.closest('.card-media'); if (m) m.classList.remove('is-loading');
+}
 
 /* Precio efectivo según variante */
 function priceOf(p, v) {
@@ -94,10 +118,10 @@ function setLD(obj) {
   if (!s) { s = document.createElement('script'); s.type = 'application/ld+json'; s.id = 'ld-json'; document.head.appendChild(s); }
   s.textContent = JSON.stringify(obj);
 }
-/* Skeleton: se retira con un pequeño retraso para mostrar el estado "cargando" */
+/* Skeleton: se quita cuando la foto termina de cargar (evento load en app-2.js);
+   aquí solo se liberan las que ya estaban en caché y, como red de seguridad, todas a los 4 s */
 function settle(root) {
-  $$('.card-media.is-loading:not(.keep)', root).forEach((m, i) => {
-    const t = REDUCE ? 0 : 260 + Math.min(i, 6) * 60 + Math.random() * 200;
-    setTimeout(() => m.classList.remove('is-loading'), t);
-  });
+  const ms = $$('.card-media.is-loading:not(.keep)', root);
+  ms.forEach(m => { const i = $('.art-1 img', m); if (!i || (i.complete && i.naturalWidth)) m.classList.remove('is-loading'); });
+  setTimeout(() => ms.forEach(m => m.classList.remove('is-loading')), 4000);
 }

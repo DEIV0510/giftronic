@@ -8,6 +8,8 @@ function countdownText() {
   return `${d} d ${String(h).padStart(2, '0')} h ${String(m).padStart(2, '0')} min`;
 }
 const countdownHTML = () => `<span class="countdown">${ic('clock', 16)}Terminan en <b data-countdown>${countdownText()}</b></span>`;
+const pickIds = (fn, n = 10) => products.filter(fn).sort((a, b) => (isOut(a) - isOut(b)) || (a.rank - b.rank)).slice(0, n).map(p => p.id);
+const tilePic = slug => products.filter(CATS[slug].m).sort((a, b) => (isOut(a) - isOut(b)) || (a.rank - b.rank))[0];
 const dealList = () => products.filter(p => !isOut(p) && p.antes > p.precio).sort((a, b) => offPct(b.antes, b.precio) - offPct(a.antes, a.precio));
 
 function viewHome() {
@@ -31,7 +33,7 @@ function viewHome() {
           <ul class="ticks"><li>${ic('check', 16)}Garantía de marca</li><li>${ic('check', 16)}Factura electrónica</li><li>${ic('check', 16)}Envío a todo el país</li></ul>
         </div>
         <div class="hero-stage">
-          ${ART('combo', { h:235 }, 'Combo televisor Samsung de 40 pulgadas QLED con barra de sonido')}
+          ${artOf(star, 'Combo televisor Samsung de 40 pulgadas QLED con barra de sonido HW-B400F', { eager:true })}
           <a class="hero-tag" href="${pHref(star)}">
             <span class="k">Combo estrella</span>
             <span class="n">Samsung TV 40" QLED + barra de sonido HW-B400F</span>
@@ -51,7 +53,7 @@ function viewHome() {
 
     <section class="wrap sec" aria-labelledby="h-cats">
       ${sectionHead('h-cats', 'Compra por categoría', 'Encuentra rápido lo que buscas.', '<a class="link" href="#/categoria/todo">Ver todo el catálogo' + ic('right', 16) + '</a>')}
-      <ul class="tiles">${tiles.map(([s, t, k, o]) => `<li class="tile"><a href="#/categoria/${s}">${ART(k, o)}<span>${t}<small>${count(s)} ${count(s) === 1 ? 'producto' : 'productos'}</small></span></a></li>`).join('')}</ul>
+      <ul class="tiles">${tiles.map(([s, t, k, o]) => `<li class="tile"><a href="#/categoria/${s}">${tilePic(s) ? artOf(tilePic(s)) : ART(k, o)}<span>${t}<small>${count(s)} ${count(s) === 1 ? 'producto' : 'productos'}</small></span></a></li>`).join('')}</ul>
     </section>
 
     <section class="wrap sec" aria-labelledby="h-deals">
@@ -61,30 +63,27 @@ function viewHome() {
 
     <section class="wrap sec" aria-labelledby="h-combos">
       ${sectionHead('h-combos', 'Combos TV + sonido', 'Imagen y sonido listos para instalar. ¿Ya tienes TV? Suma solo la barra.', '<a class="link" href="#/categoria/combos-tv">Ver todo' + ic('right', 16) + '</a>')}
-      ${railHTML([1, 2, 3, 4, 5, 6, 7], 'Combos TV + sonido')}
+      ${railHTML(pickIds(p => ['combos-tv', 'televisores'].includes(p.cat) || (p.cat === 'audio' && /barra/i.test(p.full || p.name))), 'Combos TV + sonido')}
     </section>
 
     <section class="wrap sec" aria-labelledby="h-study">
       ${sectionHead('h-study', 'Portátiles para estudiar y trabajar', 'Con disco SSD para clases, oficina y teletrabajo. También en All in One.', '<a class="link" href="#/categoria/portatiles">Ver todo' + ic('right', 16) + '</a>')}
-      ${railHTML([8, 9, 10, 11, 12, 15, 16], 'Portátiles para estudiar y trabajar')}
+      ${railHTML(pickIds(p => (p.cat === 'portatiles' || p.cat === 'all-in-one') && !isOut(p)), 'Portátiles para estudiar y trabajar')}
     </section>
 
     <section class="wrap sec" aria-labelledby="h-gamer">
       ${sectionHead('h-gamer', 'Zona Gamer', 'RTX 3050 para jugar, más monitor, mouse y micrófono para completar el setup.', '<a class="link" href="#/categoria/gaming">Ver todo' + ic('right', 16) + '</a>')}
-      ${railHTML([13, 14, 22, 24, 25], 'Zona Gamer')}
+      ${railHTML(pickIds(p => CATS.gaming.m(p) || (p.cat === 'monitores' && /gam|odyssey|legion|ultragear|hz/i.test(p.full || ''))), 'Zona Gamer')}
     </section>
 
-    <section class="wrap sec">
-      <div class="split">
-        <div role="region" aria-labelledby="h-print">
-          ${sectionHead('h-print', 'Imprime y ahorra con tinta continua', 'Menor costo por página para casa y oficina.', '<a class="link" href="#/categoria/tinta-continua">Ver todo' + ic('right', 16) + '</a>')}
-          <div class="duo">${cardsHTML([byId[19], byId[21]])}</div>
-        </div>
-        <div role="region" aria-labelledby="h-tabs">
-          ${sectionHead('h-tabs', 'Tablets', 'Para estudiar, tomar notas y ver contenido.', '<a class="link" href="#/categoria/tablets">Ver todo' + ic('right', 16) + '</a>')}
-          <div class="duo">${cardsHTML([byId[18], byId[17]])}</div>
-        </div>
-      </div>
+    <section class="wrap sec" aria-labelledby="h-print">
+      ${sectionHead('h-print', 'Imprime y ahorra con tinta continua', 'Menor costo por página para casa y oficina.', '<a class="link" href="#/categoria/tinta-continua">Ver todo' + ic('right', 16) + '</a>')}
+      ${railHTML(pickIds(CATS['tinta-continua'].m), 'Impresoras de tinta continua')}
+    </section>
+
+    <section class="wrap sec" aria-labelledby="h-tabs">
+      ${sectionHead('h-tabs', 'Tablets', 'Para estudiar, tomar notas y ver contenido.', '<a class="link" href="#/categoria/tablets">Ver todo' + ic('right', 16) + '</a>')}
+      ${railHTML(pickIds(CATS.tablets.m), 'Tablets')}
     </section>
 
     <section class="wrap" aria-labelledby="h-fin">
@@ -137,6 +136,8 @@ function viewOfertas(q) {
   const groups = { todos:() => true, combos:p => p.cat === 'combos-tv', computo:p => ['portatiles','portatiles-gamer','all-in-one'].includes(p.cat), tv:p => ['televisores','audio','proyectores'].includes(p.cat), impresion:p => p.cat === 'impresion', gamer:p => (p.tags || []).includes('Gamer') };
   const labels = { todos:'Todas', combos:'Combos', computo:'Computadores', tv:'TV y audio', impresion:'Impresión', gamer:'Gamer' };
   const list = dealList().filter(groups[tab] || groups.todos);
+  if (S.offersKey !== tab) { S.offersKey = tab; S.offersShown = 24; }
+  const shown = list.slice(0, S.offersShown);
   return {
     title: 'Ofertas y combos',
     html: `<div class="wrap">
@@ -149,7 +150,8 @@ function viewOfertas(q) {
       </header>
       <div class="pills" role="group" aria-label="Filtrar ofertas">${Object.keys(labels).map(k => `<a class="pill" href="#/ofertas?ver=${k}"${k === tab ? ' aria-current="page"' : ''}>${labels[k]}</a>`).join('')}</div>
       <p class="toolbar" style="margin-top:16px"><span class="count"><b>${list.length}</b> ${list.length === 1 ? 'oferta' : 'ofertas'}</span></p>
-      <div class="grid no-side">${list.length ? cardsHTML(list) : stateHTML({ icon:'tag', title:'No hay ofertas en este grupo', text:'Mira las demás ofertas o el catálogo completo.', actions:'<a class="btn btn-dark" href="#/ofertas">Ver todas</a>' })}</div>
+      <div class="grid no-side" id="offers-grid">${list.length ? cardsHTML(shown) : stateHTML({ icon:'tag', title:'No hay ofertas en este grupo', text:'Mira las demás ofertas o el catálogo completo.', actions:'<a class="btn btn-dark" href="#/ofertas">Ver todas</a>' })}</div>
+    ${list.length > shown.length ? `<div class="more"><span>Mostrando ${shown.length} de ${list.length}</span><span class="bar"><i style="width:${shown.length / list.length * 100}%"></i></span><button type="button" class="btn btn-secondary" data-act="more-offers">Cargar más</button></div>` : ''}
     </div>`,
     after: root => settle(root)
   };

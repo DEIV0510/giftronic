@@ -113,14 +113,13 @@ function viewPlan() {
       <ol class="decisions">
         <li><b>Esquinas rectas y naranja con disciplina.</b> Todos los componentes van a 90° (radio 0). El naranja se reserva para la acción principal, el descuento y el precio de la ficha; los precios de los listados, íconos y etiquetas van en negro y grises. Además, #FF6A00 da 2,9:1 sobre blanco y no cumple AA; los CTA, precios y badges usan #D24410 (4,6:1). El naranja del logo queda para el logo y fondos oscuros.</li>
         <li><b>La galería queda fija, no la columna de compra.</b> Con 12 bloques la columna es más alta que la pantalla; fijarla escondería el final. La galería (más corta) acompaña el scroll.</li>
-        <li><b>Ficha móvil compacta.</b> Galería de 220 px y nombre, precios y stock en el primer pantallazo; el CTA vive en la barra fija inferior.</li>
+        <li><b>Ficha móvil compacta.</b> Galería de 190 px y nombre, precios y stock en el primer pantallazo; el CTA vive en la barra fija inferior.</li>
         <li><b>Barra de navegación inferior en móvil.</b> Inicio, Categorías, Buscar, Carrito y Cuenta al alcance del pulgar. Se oculta en la ficha (la reemplaza la barra de compra) y en el checkout.</li>
         <li><b>Checkout sin distracciones.</b> Header mínimo sin menú ni footer; el total cambia al elegir contado o financiación y la diferencia se explica en texto.</li>
-        <li><b>Datos de ejemplo marcados.</b> Envío gratis desde ${cop(FREE_SHIP)}, envío ${cop(SHIP_STD)}/${cop(SHIP_EXP)}, precio con financiación +7 %, stock de Ricoh (3), «Más vendidos», usos (Estudio/Oficina/Gamer/Diseño) y condiciones de financieras están en <code>data.js</code> como ejemplo.</li>
-        <li><b>HP 15-fc0354la unificado con variantes.</b> Las tres versiones de RAM figuran agotadas en los datos; el selector igual muestra precio y stock por versión.</li>
+        <li><b>Catálogo real.</b> Los ${products.length} productos salen de <code>catalogo.json</code> (324 filas). Marca, categoría, specs y nombre corto se leen del nombre de la tienda; las versiones de un mismo portátil que solo cambian de RAM se unen en un producto con variantes (solo si comparten la referencia, como el HP 15-fc0354la). El stock y los precios son los del catálogo; los 25 productos del brief conservan su ficha detallada.</li>
+        <li><b>Datos de ejemplo marcados.</b> Envío gratis desde ${cop(FREE_SHIP)}, envío ${cop(SHIP_STD)}/${cop(SHIP_EXP)}, precio con financiación +7 %, 10 unidades del combo y «Últimas 3» de la Ricoh, «Más vendidos», el uso de cada portátil (heurística por procesador y RAM) y las condiciones de las financieras están en <code>data.js</code> como ejemplo.</li>
         <li><b>Garantía y empaques.</b> El brief condiciona la garantía a los empaques originales; la ficha lo presenta como recomendación porque negar la garantía legal por falta de empaque puede chocar con la Ley 1480. Conviene validarlo con un asesor.</li>
-        <li><b>Imágenes ilustradas.</b> Siluetas SVG por categoría, sin logos de marcas. La segunda imagen (hover) es un recorte de detalle.</li>
-        <li><b>Un archivo, sin dependencias.</b> <code>index.html</code> se abre con doble clic; las piezas de <code>src/</code> se unen con <code>node build.mjs</code> solo para editar cómodo.</li>
+        <li><b>Fotos reales, siempre uniformes.</b> Cada tarjeta usa la foto de la tienda en un contenedor 1:1 con fondo blanco, <code>object-fit: contain</code> y 8 % de aire; la ficha muestra la galería de giftronic04.com. Si una foto no carga aparece la silueta de la categoría con el modelo. <code>index.html</code> se abre con doble clic junto a la carpeta <code>img/</code>.</li>
       </ol>
 
       <h2>Criterios de aceptación</h2>

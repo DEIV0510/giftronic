@@ -4,35 +4,31 @@
 const skuOf = (p, v) => `GT-${String(p.id).padStart(4, '0')}${v ? '-' + v.replace(/\s/g, '') : ''}`;
 const SPEC_IC = { 'Procesador':'cpu', 'Memoria RAM':'grid', 'Almacenamiento':'hdd', 'Pantalla':'monitor', 'Gráficos':'gpu', 'Tipo':'printer', 'Funciones':'file', 'Conectividad':'wifi', 'Resolución':'scan', 'Brillo':'sun', 'Sistema':'cpu', 'Frecuencia':'bolt', 'Tiempo de respuesta':'clock', 'Sensor':'zoom', 'Iluminación':'sun', 'Conexión':'cable', 'Incluye':'box' };
 
+/* Galería: foto principal + fotos de la tienda (galeria_urls). Las que no cargan se descartan. */
+const BAD_IMG = new Set();
 function slidesFor(p) {
-  if (p.gallery) return p.gallery;
-  return [
-    { kind:'Foto principal', art:[p.art.k, p.art] },
-    { kind:'Detalle', art:[p.art.k, p.art], vb:CROPS[p.art.k] },
-    { kind:'Infografía', info:{ icon:SPEC_IC[(p.spec || [[]])[0][0]] || 'badge', title:p.model, lines:p.chips.slice(0, 3) } },
-    { kind:'Infografía', info:{ icon:'shield', title:'Garantía directa con la marca', lines:['1 año · Factura electrónica', 'Producto nuevo y sellado'] } }
-  ];
+  const s = [{ kind:'Foto principal', main:true }];
+  if (IMG_MODE === 'local') (p.gal || []).slice(1).filter(u => !BAD_IMG.has(u)).slice(0, 7).forEach(u => s.push({ kind:'Galería', url:u }));
+  return s;
 }
-const slideHTML = (s, label = '') => s.info ? infoArt(s.info) : ART(s.art[0], s.art[1], label, s.vb);
+const slideHTML = (s, p, label = '', eager = false) => s.main ? artOf(p, label, { eager }) : galImg(p, s.url, label);
 
 function galleryHTML(p) {
-  const sl = slidesFor(p);
-  return `<div class="gal">
+  const sl = slidesFor(p), many = sl.length > 1;
+  return `<div class="gal" id="gal">
     <div class="gal-d">
-      <div class="gal-main zoomable" id="gal-main" tabindex="0" role="group" aria-roledescription="carrusel" aria-label="Galería de ${esc(p.name)}. Usa las flechas del teclado para cambiar de imagen.">
-        <div class="gal-stage" id="gal-stage">${slideHTML(sl[0], p.name)}</div>
-        <span class="gal-kind" id="gal-kind"><span class="badge badge-gamer">${sl[0].kind}</span></span>
-        <button type="button" class="gal-arrow prev" data-act="slide" data-d="-1" aria-label="Imagen anterior">${ic('left')}</button>
+      <div class="gal-main zoomable" id="gal-main" tabindex="0" role="group" aria-roledescription="carrusel" aria-label="Galería de ${esc(p.name)}${many ? '. Usa las flechas del teclado para cambiar de imagen.' : ''}">
+        <div class="gal-stage" id="gal-stage">${slideHTML(sl[0], p, p.name, true)}</div>
+        ${many ? `<button type="button" class="gal-arrow prev" data-act="slide" data-d="-1" aria-label="Imagen anterior">${ic('left')}</button>
         <button type="button" class="gal-arrow next" data-act="slide" data-d="1" aria-label="Imagen siguiente">${ic('right')}</button>
-        <span class="gal-count" id="gal-count">1 / ${sl.length}</span>
+        <span class="gal-count" id="gal-count">1 / ${sl.length}</span>` : ''}
         <span class="gal-hint">${ic('zoom', 14)}Pasa el mouse para ampliar</span>
       </div>
-      <div class="thumbs" role="group" aria-label="Miniaturas">${sl.map((s, i) => `<button type="button" class="thumb" data-act="slide-to" data-i="${i}" aria-label="Imagen ${i + 1} de ${sl.length}: ${s.kind}" aria-current="${i === 0}">${s.info ? infoArt(s.info).replace('role="img"', 'aria-hidden="true"') : ART(s.art[0], s.art[1], '', s.vb)}</button>`).join('')}</div>
+      ${many ? `<div class="thumbs" role="group" aria-label="Miniaturas">${sl.map((s, i) => `<button type="button" class="thumb" data-act="slide-to" data-i="${i}" aria-label="Imagen ${i + 1} de ${sl.length}" aria-current="${i === 0}">${slideHTML(s, p)}</button>`).join('')}</div>` : ''}
     </div>
     <div class="gal-m" role="group" aria-roledescription="carrusel" aria-label="Galería de ${esc(p.name)}">
-      <div class="gal-m-track" id="gal-m-track" tabindex="0" aria-label="Desliza para ver más imágenes">${sl.map((s, i) => `<div aria-label="Imagen ${i + 1} de ${sl.length}">${slideHTML(s, i === 0 ? p.name : '')}</div>`).join('')}</div>
-      <span class="gal-kind"><span class="badge badge-gamer" id="gal-m-kind">${sl[0].kind}</span></span>
-      <div class="gal-dots" aria-hidden="true">${sl.map((_, i) => `<i${i === 0 ? ' class="on"' : ''}></i>`).join('')}</div>
+      <div class="gal-m-track" id="gal-m-track" tabindex="0" aria-label="${many ? 'Desliza para ver más imágenes' : esc(p.name)}">${sl.map((s, i) => `<div aria-label="Imagen ${i + 1} de ${sl.length}">${slideHTML(s, p, i === 0 ? p.name : '', i === 0)}</div>`).join('')}</div>
+      ${many ? `<div class="gal-dots" aria-hidden="true">${sl.map((_, i) => `<i${i === 0 ? ' class="on"' : ''}></i>`).join('')}</div>` : ''}
     </div>
   </div>`;
 }

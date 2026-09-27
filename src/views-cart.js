@@ -28,7 +28,7 @@ function cartLineHTML(l) {
 }
 function upsellOf(t) {
   const inCart = new Set(t.lines.map(l => l.id));
-  const ids = t.lines.flatMap(l => l.p.acc || []).concat([24, 6]);
+  const ids = t.lines.flatMap(l => accOf(l.p)).concat([24, 6]);
   return ids.map(id => byId[id]).find(p => p && !inCart.has(p.id) && !isOut(p));
 }
 function cartDrawerHTML() {

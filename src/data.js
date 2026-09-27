@@ -1,6 +1,8 @@
 /* =====================================================================
-   Datos: catálogo real de la tienda (brief v2). Todas las vistas salen de aquí.
+   Datos: catálogo real de la tienda (catalogo.json -> src/catalog.js) + fichas curadas de los
+   25 productos del brief. Todas las vistas salen del arreglo `products`.
    ===================================================================== */
+const IMG_MODE = '__IMG_MODE__';   // 'local': index.html con la carpeta img/ al lado · 'pack': Artifact (img-pack.json)
 const WA = '573017913140';
 const FREE_SHIP = 300000;      // ejemplo: umbral de envío gratis
 const SHIP_STD = 15000;        // ejemplo: envío estándar bajo el umbral
@@ -8,9 +10,10 @@ const SHIP_EXP = 25000;        // ejemplo: envío express en ciudades principale
 const FIN_RATE = 1.07;         // ejemplo: precio con financiación = contado + 7 %
 const MAIN_CITIES = ['Bogotá', 'Medellín', 'Cali', 'Barranquilla'];
 
+// Fichas curadas (id del brief). Se aplican sobre el producto real del catálogo (OLD2CID).
 // stock: número = unidades conocidas · null = disponible sin cantidad publicada · 0 = agotado
 // rank: orden de "Más vendidos" (ejemplo)
-const products = [
+const CURATED_LIST = [
   { id:1, slug:'combo-samsung-qled-40', brand:'Samsung', cat:'combos-tv', name:'Combo TV 40" QLED + barra HW-B400F', model:'QN40Q5FAAKXZL + HW-B400F', type:'Combo TV QLED 40" + barra de sonido', antes:1999999, precio:999999, stock:10, rank:1, rating:5, reviews:1,
     chips:['40"','Full HD','QLED','Tizen'], tags:['Combo'], a:{size:'40"', res:'Full HD', os:'Tizen'}, art:{k:'combo',h:235}, combo:true },
   { id:2, slug:'combo-hisense-40-a4nv', brand:'Hisense', cat:'combos-tv', name:'Combo TV 40" A4NV + barra compacta', model:'40A4NV + barra compacta', type:'Combo TV Full HD 40" + barra de sonido', antes:1999999, precio:935999, stock:null, rank:4,
@@ -81,7 +84,18 @@ const products = [
     chips:['USB'], tags:['Gamer'], art:{k:'mic',h:18}, acc:[24],
     spec:[['Conexión','USB']] }
 ];
+const OLD2CID = { 1:11208, 2:11192, 3:11099, 4:11151, 5:10881, 6:11163, 7:11177, 8:11086, 9:11119, 10:10945, 11:10904, 12:10625, 13:11023, 14:11004, 15:11063, 16:10933, 17:10985, 18:10969, 19:10898, 20:11075, 21:10639, 22:10868, 23:11044, 24:11130, 25:11138 };
+const products = CATALOG.map(c => {
+  const old = CURATED_LIST.find(o => OLD2CID[o.id] === c.id);
+  if (!old) return c;
+  // precios, stock y variantes salen del catálogo real; la ficha curada aporta textos y specs
+  const { id, antes, precio, stock, variants, ...keep } = old;
+  const p = { ...c, ...keep, id: c.id, oldId: id };
+  if (id === 1 || id === 20) p.stock = stock;   // ejemplo: 10 unidades del combo y «Últimas 3» en la Ricoh
+  return p;
+}).sort((a, b) => a.rank - b.rank);
 const byId = Object.fromEntries(products.map(p => [p.id, p]));
+Object.entries(OLD2CID).forEach(([o, n]) => { if (byId[n]) byId[o] = byId[n]; });   // alias con los id del brief
 const bySlug = Object.fromEntries(products.map(p => [p.slug, p]));
 
 /* Ficha completa del combo Samsung (id 1) */
@@ -113,63 +127,66 @@ Object.assign(byId[1], {
 
 /* Familias del mega-menú */
 const FAMILIES = [
-  { id:'computacion', t:'Computación', i:'laptop', feat:8, subs:[['portatiles','Portátiles'],['portatiles-gamer','Portátiles gamer'],['all-in-one','All in One'],['monitores','Monitores'],['almacenamiento','Almacenamiento'],['perifericos','Periféricos']] },
+  { id:'computacion', t:'Computación', i:'laptop', feat:8, subs:[['portatiles','Portátiles'],['portatiles-gamer','Portátiles gamer'],['all-in-one','All in One'],['monitores','Monitores'],['pc-escritorio','PC de escritorio'],['almacenamiento','Almacenamiento'],['perifericos','Periféricos'],['accesorios-pc','Accesorios']] },
   { id:'tv-audio', t:'TV y Audio', i:'tv', feat:1, subs:[['televisores','Televisores'],['combos-tv','Combos TV + barra'],['barras-de-sonido','Barras de sonido'],['proyectores','Proyectores'],['audio','Audio']] },
   { id:'impresion', t:'Impresión', i:'printer', feat:19, subs:[['tinta-continua','Tinta continua'],['laser','Láser'],['multifuncionales','Multifuncionales']] },
   { id:'celulares-tablets', t:'Celulares y Tablets', i:'smartphone', feat:18, subs:[['celulares','Celulares'],['tablets','Tablets'],['smartwatches','Smartwatches'],['accesorios','Accesorios']] },
-  { id:'gaming', t:'Gaming', i:'gamepad', feat:13, subs:[['consolas','Consolas'],['accesorios-gamer','Accesorios'],['pc-gaming','PC Gaming']] },
+  { id:'gaming', t:'Gaming', i:'gamepad', feat:13, subs:[['consolas','Consolas y videojuegos'],['accesorios-gamer','Accesorios'],['pc-gaming','PC Gaming']] },
   { id:'conectividad', t:'Conectividad', i:'router', feat:null, subs:[['redes','Redes'],['cables-y-hubs','Cables y hubs'],['camaras','Cámaras'],['tarjetas-de-memoria','Tarjetas de memoria']] }
 ];
 
 /* Categorías: nombre, familia, qué productos incluye y qué filtros muestra */
 const LAPTOP_F = ['brand','cpu','ram','ssd','scr','use','avail','deal'];
-const TV_F = ['brand','size','res','os','avail','deal'];
+const TV_F = ['brand','size','res','panel','os','avail','deal'];
+const BASE_F = ['brand','avail','deal'];
+const isCat = (...c) => p => c.includes(p.cat);
 const CATS = {
-  'todo': { name:'Todo el catálogo', m:() => true, f:['brand','avail','deal'], seo:'Todo el catálogo de Giftronic04: tecnología original con garantía de marca, factura electrónica y envío a toda Colombia. Paga de contado o a cuotas con Addi, Sumas Pay o Sistecrédito.' },
-  'portatiles': { name:'Portátiles', fam:'computacion', m:p => ['portatiles','portatiles-gamer'].includes(p.cat), f:LAPTOP_F, seo:'Portátiles originales Acer, Dell y HP con garantía directa de la marca, factura electrónica y envío a toda Colombia. Filtra por procesador, memoria RAM, almacenamiento, pantalla o uso, y págalo de contado o a cuotas con Addi, Sumas Pay o Sistecrédito sin cuota inicial.' },
-  'portatiles-gamer': { name:'Portátiles gamer', fam:'computacion', m:p => p.cat === 'portatiles-gamer', f:LAPTOP_F, seo:'Portátiles gamer con tarjeta gráfica NVIDIA GeForce RTX para jugar, transmitir y editar. Garantía de marca y pago a cuotas.' },
-  'all-in-one': { name:'All in One', fam:'computacion', m:p => p.cat === 'all-in-one', f:['brand','cpu','ram','ssd','scr','avail','deal'], seo:'Computadores todo en uno de Lenovo y HP: pantalla, procesador y parlantes en un solo equipo, ideal para casa y oficina.' },
-  'monitores': { name:'Monitores', fam:'computacion', m:p => p.cat === 'monitores', f:['brand','avail','deal'], seo:'Monitores para gaming y oficina con alta frecuencia de actualización.' },
-  'almacenamiento': { name:'Almacenamiento', fam:'computacion', m:() => false, f:['brand'], seo:'Discos, memorias USB y SSD.' },
-  'perifericos': { name:'Periféricos', fam:'computacion', m:p => p.cat === 'perifericos', f:['brand','avail','deal'], seo:'Mouse, micrófonos y accesorios para tu escritorio.' },
-  'tv-audio': { name:'TV y Audio', fam:'tv-audio', m:p => ['combos-tv','televisores','audio','proyectores'].includes(p.cat), f:['brand','avail','deal'], seo:'Televisores, combos con barra de sonido, audio y proyectores con garantía de marca.' },
-  'televisores': { name:'Televisores', fam:'tv-audio', m:p => ['televisores','combos-tv'].includes(p.cat), f:TV_F, seo:'Televisores Samsung y Hisense Full HD y 4K con Smart TV, garantía de marca y envío a toda Colombia.' },
-  'combos-tv': { name:'Combos TV + barra', fam:'tv-audio', m:p => p.cat === 'combos-tv', f:TV_F, seo:'Televisor y barra de sonido en un solo pedido: imagen y sonido listos para instalar.' },
-  'barras-de-sonido': { name:'Barras de sonido', fam:'tv-audio', m:p => p.cat === 'audio', f:['brand','avail','deal'], seo:'Barras de sonido Samsung y Hisense con Bluetooth y Dolby.' },
-  'audio': { name:'Audio', fam:'tv-audio', m:p => p.cat === 'audio', f:['brand','avail','deal'], seo:'Barras de sonido y audio para tu televisor.' },
-  'proyectores': { name:'Proyectores', fam:'tv-audio', m:p => p.cat === 'proyectores', f:['brand','avail','deal'], seo:'Proyectores LED con Wi-Fi y Android para cine en casa.' },
-  'impresion': { name:'Impresión', fam:'impresion', m:p => p.cat === 'impresion', f:['brand','ptype','avail','deal'], seo:'Impresoras de tinta continua y láser para casa y oficina: menor costo por página.' },
-  'tinta-continua': { name:'Tinta continua', fam:'impresion', m:p => p.a && p.a.ptype === 'Tinta continua', f:['brand','avail','deal'], seo:'Impresoras de tinta continua Brother y Epson: imprime más pagando menos por página.' },
-  'laser': { name:'Láser', fam:'impresion', m:p => p.a && p.a.ptype === 'Láser', f:['brand','avail','deal'], seo:'Impresoras láser para alto volumen de impresión.' },
-  'multifuncionales': { name:'Multifuncionales', fam:'impresion', m:p => p.a && p.a.mf, f:['brand','ptype','avail','deal'], seo:'Impresoras que imprimen, copian y escanean.' },
-  'celulares-tablets': { name:'Celulares y Tablets', fam:'celulares-tablets', m:p => p.cat === 'tablets', f:['brand','avail','deal'], seo:'Celulares, tablets y accesorios.' },
-  'celulares': { name:'Celulares', fam:'celulares-tablets', m:() => false, f:['brand'], seo:'Celulares de las principales marcas.' },
-  'tablets': { name:'Tablets', fam:'celulares-tablets', m:p => p.cat === 'tablets', f:['brand','ram','ssd','scr','avail','deal'], seo:'Tablets Lenovo para estudiar, tomar notas y ver contenido.' },
-  'smartwatches': { name:'Smartwatches', fam:'celulares-tablets', m:() => false, f:['brand'], seo:'Relojes inteligentes.' },
-  'accesorios': { name:'Accesorios', fam:'celulares-tablets', m:() => false, f:['brand'], seo:'Accesorios para celular y tablet.' },
-  'gaming': { name:'Gaming', fam:'gaming', m:p => (p.tags || []).includes('Gamer'), f:['brand','avail','deal'], seo:'Portátiles gamer, monitores y accesorios para jugar.' },
-  'consolas': { name:'Consolas', fam:'gaming', m:() => false, f:['brand'], seo:'Consolas de videojuegos.' },
-  'accesorios-gamer': { name:'Accesorios gamer', fam:'gaming', m:p => p.cat === 'perifericos', f:['brand','avail','deal'], seo:'Mouse, micrófonos y accesorios gamer.' },
-  'pc-gaming': { name:'PC Gaming', fam:'gaming', m:() => false, f:['brand'], seo:'Computadores de escritorio para gaming.' },
-  'conectividad': { name:'Conectividad', fam:'conectividad', m:() => false, f:['brand'], seo:'Redes, cables, cámaras y memorias.' },
-  'redes': { name:'Redes', fam:'conectividad', m:() => false, f:['brand'], seo:'Routers y equipos de red.' },
-  'cables-y-hubs': { name:'Cables y hubs', fam:'conectividad', m:() => false, f:['brand'], seo:'Cables HDMI, USB y hubs.' },
-  'camaras': { name:'Cámaras', fam:'conectividad', m:() => false, f:['brand'], seo:'Cámaras web y de seguridad.' },
-  'tarjetas-de-memoria': { name:'Tarjetas de memoria', fam:'conectividad', m:() => false, f:['brand'], seo:'Tarjetas microSD y SD.' }
+  'todo': { name:'Todo el catálogo', m:() => true, f:['catg','brand','avail','deal'], seo:'Todo el catálogo de Giftronic04: tecnología original con garantía de marca, factura electrónica y envío a toda Colombia. Paga de contado o a cuotas con Addi, Sumas Pay o Sistecrédito.' },
+  'portatiles': { name:'Portátiles', fam:'computacion', m:isCat('portatiles','portatiles-gamer'), f:LAPTOP_F, seo:'Portátiles originales Acer, Dell, HP, Lenovo y ASUS con garantía directa de la marca, factura electrónica y envío a toda Colombia. Filtra por procesador, memoria RAM, almacenamiento, pantalla o uso, y págalo de contado o a cuotas con Addi, Sumas Pay o Sistecrédito sin cuota inicial.' },
+  'portatiles-gamer': { name:'Portátiles gamer', fam:'computacion', m:isCat('portatiles-gamer'), f:LAPTOP_F, seo:'Portátiles gamer con tarjeta gráfica NVIDIA GeForce RTX para jugar, transmitir y editar. Garantía de marca y pago a cuotas.' },
+  'all-in-one': { name:'All in One', fam:'computacion', m:isCat('all-in-one'), f:['brand','cpu','ram','ssd','scr','avail','deal'], seo:'Computadores todo en uno: pantalla, procesador y parlantes en un solo equipo, ideal para casa y oficina.' },
+  'monitores': { name:'Monitores', fam:'computacion', m:isCat('monitores'), f:['brand','scr','res','hz','avail','deal'], seo:'Monitores para gaming y oficina, con alta frecuencia de actualización y paneles IPS.' },
+  'pc-escritorio': { name:'PC de escritorio', fam:'computacion', m:isCat('pc-escritorio'), f:BASE_F, seo:'Computadores de escritorio para oficina y hogar.' },
+  'almacenamiento': { name:'Almacenamiento', fam:'computacion', m:isCat('almacenamiento'), f:BASE_F, seo:'Discos, memorias USB y SSD.' },
+  'perifericos': { name:'Periféricos', fam:'computacion', m:isCat('perifericos'), f:BASE_F, seo:'Mouse, teclados, micrófonos y accesorios para tu escritorio.' },
+  'accesorios-pc': { name:'Accesorios de computación', fam:'computacion', m:isCat('accesorios-pc'), f:BASE_F, seo:'Cargadores, reguladores de voltaje, memorias y morrales.' },
+  'televisores': { name:'Televisores', fam:'tv-audio', m:isCat('televisores','combos-tv'), f:TV_F, seo:'Televisores Samsung, Hisense, iFFALCON y más, Full HD y 4K con Smart TV, garantía de marca y envío a toda Colombia.' },
+  'combos-tv': { name:'Combos TV + barra', fam:'tv-audio', m:isCat('combos-tv'), f:TV_F, seo:'Televisor y barra de sonido en un solo pedido: imagen y sonido listos para instalar.' },
+  'barras-de-sonido': { name:'Barras de sonido', fam:'tv-audio', m:p => p.cat === 'audio' && /barra/i.test(p.full || p.name), f:BASE_F, seo:'Barras de sonido Samsung y Hisense con Bluetooth y Dolby.' },
+  'audio': { name:'Audio', fam:'tv-audio', m:isCat('audio'), f:BASE_F, seo:'Barras de sonido, audífonos y parlantes.' },
+  'proyectores': { name:'Proyectores', fam:'tv-audio', m:isCat('proyectores'), f:BASE_F, seo:'Proyectores LED con Wi-Fi y Android para cine en casa.' },
+  'impresion': { name:'Impresión', fam:'impresion', m:isCat('impresion'), f:['brand','ptype','avail','deal'], seo:'Impresoras de tinta continua y láser para casa y oficina: menor costo por página.' },
+  'tinta-continua': { name:'Tinta continua', fam:'impresion', m:p => p.a && p.a.ptype === 'Tinta continua', f:BASE_F, seo:'Impresoras de tinta continua Brother y Epson: imprime más pagando menos por página.' },
+  'laser': { name:'Láser', fam:'impresion', m:p => p.a && p.a.ptype === 'Láser', f:BASE_F, seo:'Impresoras láser para alto volumen de impresión.' },
+  'multifuncionales': { name:'Multifuncionales', fam:'impresion', m:p => p.cat === 'impresion' && p.a && p.a.mf, f:['brand','ptype','avail','deal'], seo:'Impresoras que imprimen, copian y escanean.' },
+  'celulares': { name:'Celulares', fam:'celulares-tablets', m:isCat('celulares'), f:BASE_F, seo:'Celulares de las principales marcas.' },
+  'tablets': { name:'Tablets', fam:'celulares-tablets', m:isCat('tablets'), f:['brand','ram','ssd','scr','avail','deal'], seo:'Tablets Lenovo y Apple para estudiar, tomar notas y ver contenido.' },
+  'smartwatches': { name:'Smartwatches', fam:'celulares-tablets', m:isCat('smartwatches'), f:BASE_F, seo:'Relojes inteligentes.' },
+  'accesorios': { name:'Accesorios', fam:'celulares-tablets', m:() => false, f:BASE_F, seo:'Accesorios para celular y tablet.' },
+  'gaming': { name:'Gaming', fam:'gaming', m:p => (p.tags || []).includes('Gamer') || ['consolas','accesorios-gamer','pc-gaming','portatiles-gamer'].includes(p.cat), f:['catg','brand','avail','deal'], seo:'Portátiles gamer, monitores, consolas y accesorios para jugar.' },
+  'consolas': { name:'Consolas y videojuegos', fam:'gaming', m:isCat('consolas'), f:BASE_F, seo:'Consolas y videojuegos.' },
+  'accesorios-gamer': { name:'Accesorios gamer', fam:'gaming', m:isCat('accesorios-gamer'), f:BASE_F, seo:'Mouse, teclados, controles y accesorios gamer.' },
+  'pc-gaming': { name:'PC Gaming', fam:'gaming', m:isCat('pc-gaming'), f:BASE_F, seo:'Computadores de escritorio para gaming.' },
+  'redes': { name:'Redes', fam:'conectividad', m:isCat('redes'), f:BASE_F, seo:'Routers y adaptadores de red.' },
+  'cables-y-hubs': { name:'Cables y hubs', fam:'conectividad', m:isCat('cables-y-hubs'), f:BASE_F, seo:'Cables HDMI, USB y hubs.' },
+  'camaras': { name:'Cámaras', fam:'conectividad', m:isCat('camaras'), f:BASE_F, seo:'Cámaras web y de seguridad.' },
+  'tarjetas-de-memoria': { name:'Tarjetas de memoria', fam:'conectividad', m:isCat('tarjetas-de-memoria'), f:BASE_F, seo:'Tarjetas microSD y SD.' }
 };
-FAMILIES.forEach(f => { if (!CATS[f.id]) CATS[f.id] = { name:f.t, fam:f.id, m:p => f.subs.some(([s]) => CATS[s] && CATS[s].m(p)), f:['brand','avail','deal'], seo:'' }; });
-const catOf = p => ({ 'combos-tv':'combos-tv', televisores:'televisores', audio:'barras-de-sonido', portatiles:'portatiles', 'portatiles-gamer':'portatiles-gamer', 'all-in-one':'all-in-one', tablets:'tablets', impresion:'impresion', monitores:'monitores', proyectores:'proyectores', perifericos:'perifericos' })[p.cat];
+FAMILIES.forEach(f => { if (!CATS[f.id]) CATS[f.id] = { name:f.t, fam:f.id, m:p => f.subs.some(([s]) => CATS[s] && CATS[s].m(p)), f:['catg','brand','avail','deal'], seo:'' }; });
+const catOf = p => CATS[p.cat] ? p.cat : 'todo';
 const famOf = slug => FAMILIES.find(f => f.id === (CATS[slug] || {}).fam);
 
 /* Filtros (facetas) */
-const stockOf = p => p.variants ? p.variants.reduce((s, v) => s + (v.stock || 0), 0) : p.stock;
+const stockOf = p => p.variants ? (p.variants.some(v => v.stock == null) ? null : p.variants.reduce((s, v) => s + (v.stock || 0), 0)) : p.stock;
 const isOut = p => stockOf(p) === 0;
 const FACETS = {
-  brand: { t:'Marca', get:p => [p.brand] },
+  brand: { t:'Marca', get:p => [p.brand || 'Otras marcas'] },
+  panel: { t:'Panel', get:p => p.a && p.a.panel ? [p.a.panel] : [] },
+  hz: { t:'Frecuencia', get:p => p.a && p.a.hz ? [p.a.hz] : [], order:['60 Hz','75 Hz','100 Hz','144 Hz','165 Hz','180 Hz','200 Hz','240 Hz','280 Hz'] },
   cpu: { t:'Procesador', get:p => p.a && p.a.cpu ? [p.a.cpu] : [] },
-  ram: { t:'Memoria RAM', get:p => p.a && p.a.ram ? [].concat(p.a.ram) : [], order:['8 GB','16 GB','24 GB'] },
-  ssd: { t:'Almacenamiento', get:p => p.a && p.a.ssd ? [p.a.ssd] : [], order:['128 GB','256 GB','512 GB','1 TB'] },
-  scr: { t:'Pantalla', get:p => p.a && p.a.scr ? [p.a.scr] : [], order:['11"','12.7"','14"','15.6"','16"','24"','27"'] },
+  ram: { t:'Memoria RAM', get:p => p.a && p.a.ram ? [].concat(p.a.ram) : [], order:['4 GB','8 GB','12 GB','16 GB','24 GB','32 GB','40 GB','64 GB'] },
+  ssd: { t:'Almacenamiento', get:p => p.a && p.a.ssd ? [p.a.ssd] : [], order:['64 GB','128 GB','256 GB','500 GB','512 GB','1 TB','2 TB'] },
+  scr: { t:'Pantalla', get:p => p.a && p.a.scr ? [p.a.scr] : [] },
   use: { t:'Uso', get:p => p.a && p.a.use ? p.a.use : [], order:['Estudio','Oficina','Gamer','Diseño'] },
   size: { t:'Tamaño', get:p => p.a && p.a.size ? [p.a.size] : [] },
   res: { t:'Resolución', get:p => p.a && p.a.res ? [p.a.res] : [] },

@@ -9,7 +9,7 @@ const norm = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase
 function searchProducts(q) {
   const words = norm(q).split(/\s+/).filter(Boolean).map(w => w.replace(/portatil(es)?/, 'portatil').replace(/^tv$/, 'tv'));
   if (!words.length) return [];
-  return products.filter(p => { const hay = norm([p.name, p.brand, p.type, p.model, p.chips.join(' '), CATS[catOf(p)].name, p.cat].join(' ')); return words.every(w => hay.includes(w)); });
+  return products.filter(p => { const hay = norm([p.name, p.full || '', p.brand, p.type, p.model, p.chips.join(' '), CATS[catOf(p)].name, p.cat].join(' ')); return words.every(w => hay.includes(w)); });
 }
 
 /* Estado del listado (se reinicia al cambiar de categoría o de búsqueda) */
@@ -44,7 +44,8 @@ function optionsOf(L, k) {
   const m = new Map();
   L.base.forEach(p => F.get(p).forEach(v => m.set(v, 0)));
   pool.forEach(p => F.get(p).forEach(v => m.set(v, (m.get(v) || 0) + 1)));
-  const keys = F.order ? F.order.filter(v => m.has(v)) : [...m.keys()].sort((a, b) => a.localeCompare(b, 'es', { numeric:true }));
+  const byNum = (a, b) => a.localeCompare(b, 'es', { numeric:true });
+  const keys = F.order ? [...F.order.filter(v => m.has(v)), ...[...m.keys()].filter(v => !F.order.includes(v)).sort(byNum)] : [...m.keys()].sort(byNum);
   return keys.map(v => ({ v, l:v, n:m.get(v) }));
 }
 function filtersHTML(L, px) {

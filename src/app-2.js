@@ -231,6 +231,42 @@ if (!REDUCE) setInterval(() => {
   li[i].classList.remove('is-on'); li[(i + 1) % li.length].classList.add('is-on');
 }, 3200);
 
+/* ---------- Fotos: carga, respaldo y segunda imagen ---------- */
+ACTIONS['more-offers'] = () => { const before = $$('#offers-grid .card').length; S.offersShown += 24; refreshView(); const nx = $$('#offers-grid .card')[before]; if (nx) $('a', nx).focus(); };
+let galTimer;
+function galFail(url) {
+  BAD_IMG.add(url);
+  clearTimeout(galTimer);
+  galTimer = setTimeout(() => { const g = $('#gal'); if (g && S.pdp) { const p = byId[S.pdp.id]; g.outerHTML = galleryHTML(p); S.pdp.slide = 0; bindGallery(p); } }, 60);
+}
+document.addEventListener('load', e => {
+  const t = e.target; if (!t || t.tagName !== 'IMG') return;
+  const m = t.closest('.card-media'); if (!m) return;
+  if (t.dataset.src2) m.classList.add('has-2'); else m.classList.remove('is-loading');
+}, true);
+document.addEventListener('error', e => {
+  const t = e.target; if (!t || t.tagName !== 'IMG') return;
+  if (t.dataset.src2) return t.remove();
+  if (t.dataset.gal) { const th = t.closest('.thumb, .gal-m-track > div'); if (th) th.remove(); return galFail(t.dataset.gal); }
+  if (t.dataset.fbmain) { const tmp = document.createElement('span'); tmp.innerHTML = artOf(byId[t.dataset.fbmain]); return t.replaceWith(tmp.firstElementChild); }
+  if (t.dataset.pid) imgFallback(t);
+}, true);
+document.addEventListener('pointerover', e => {
+  if (e.pointerType !== 'mouse') return;
+  const c = e.target.closest && e.target.closest('.card'); if (!c) return;
+  const i = $('img[data-src2]:not([src])', c); if (i) i.src = i.dataset.src2;
+});
+/* Versión publicada: las fotos llegan en un solo paquete (img-pack.json) */
+function fillFromPack(root) {
+  $$('img[data-pid]:not([src])', root).forEach(i => { const u = PACK && PACK[i.dataset.pid]; if (u) i.src = u; else if (PACK) imgFallback(i); });
+}
+if (IMG_MODE === 'pack') {
+  fetch('img-pack.json').then(r => r.ok ? r.json() : Promise.reject(r.status)).then(j => { PACK = j; fillFromPack(document); })
+    .catch(() => { PACK = {}; fillFromPack(document); });
+  new MutationObserver(ms => { if (PACK) ms.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1) fillFromPack(n.tagName === 'IMG' ? n.parentElement || n : n); })); })
+    .observe(document.getElementById('device'), { childList:true, subtree:true });
+}
+
 /* ---------- Inicio ---------- */
 $('#tb-ship').textContent = `Envío gratis a toda Colombia desde ${cop(FREE_SHIP)}`;
 $('#foot-nl').innerHTML = newsletterForm('nl-foot');
