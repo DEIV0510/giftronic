@@ -12,6 +12,7 @@ function gt_defaults() {
     'instagram'  => 'https://www.instagram.com/giftronic.04/',
     'facebook'   => 'https://www.facebook.com/102269164857514',
     'hero_id'    => 11208,
+    'logo_id'    => 0,
     'sliders'    => '7,2',
     'hero_title' => 'Tecnología a cuotas y con envío a toda Colombia',
     'hero_sub'   => 'Portátiles, televisores, impresoras y gaming de Samsung, Lenovo, HP, Acer y más marcas. Paga con PSE, tarjeta o a cuotas con Addi, Sistecrédito o SU+ Pay.',
@@ -52,6 +53,7 @@ function gt_sanitize_opts($in) {
     'instagram'  => esc_url_raw(isset($in['instagram']) ? $in['instagram'] : ''),
     'facebook'   => esc_url_raw(isset($in['facebook']) ? $in['facebook'] : ''),
     'hero_id'    => absint(isset($in['hero_id']) ? $in['hero_id'] : 0),
+    'logo_id'    => absint(isset($in['logo_id']) ? $in['logo_id'] : 0),
     'sliders'    => implode(',', array_filter(array_map('absint', explode(',', isset($in['sliders']) ? (string) $in['sliders'] : '')))),
     'hero_title' => sanitize_text_field(isset($in['hero_title']) ? $in['hero_title'] : $d['hero_title']),
     'hero_sub'   => sanitize_text_field(isset($in['hero_sub']) ? $in['hero_sub'] : $d['hero_sub']),
@@ -111,6 +113,9 @@ function gt_settings_page() {
           <input id="gt-hero" type="number" min="0" name="<?php echo esc_attr($f('hero_id')); ?>" value="<?php echo esc_attr($o['hero_id']); ?>" class="small-text">
           <?php $hp = ($o['hero_id'] && function_exists('wc_get_product')) ? wc_get_product($o['hero_id']) : null; echo $hp ? ' <span>' . esc_html($hp->get_name()) . '</span>' : ' <span>Sin producto: se elige el más vendido en oferta.</span>'; ?>
           <p class="description">ID del producto (aparece al pasar el mouse en Productos → Todos los productos).</p></td></tr>
+        <tr><th scope="row"><label for="gt-lg">Logo (ID de imagen)</label></th><td>
+          <input id="gt-lg" type="number" min="0" class="small-text" name="<?php echo esc_attr($f('logo_id')); ?>" value="<?php echo esc_attr($o['logo_id']); ?>">
+          <p class="description">0 = el logo oscuro de la cabecera anterior (MOVIL-2). Para cambiarlo, escribe el ID de otra imagen de Medios con fondo negro.</p></td></tr>
         <tr><th scope="row"><label for="gt-sl">Banners de la portada</label></th><td>
           <input id="gt-sl" type="text" class="regular-text" name="<?php echo esc_attr($f('sliders')); ?>" value="<?php echo esc_attr($o['sliders']); ?>">
           <p class="description">ID de los sliders de Smart Slider que se muestran en la portada, separados por coma (los mismos de la portada anterior: 7,2). Déjalo vacío para no mostrarlos.</p></td></tr>

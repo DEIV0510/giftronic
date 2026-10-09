@@ -320,3 +320,6 @@ body.gt-has-buybar .gt-wa-float{display:none}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
+
+/* Carrito lateral e ícono flotante de SureCart (la tienda vende con WooCommerce): ocultos por si algún plugin los vuelve a imprimir */
+.sc-cart-wrapper,.wp-block-surecart-cart-icon,.wp-block-surecart-slide-out-cart,.sc-drawer__backdrop{display:none!important}

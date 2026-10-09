@@ -384,11 +384,46 @@
   function bump() {
     $$('.gt-cart-count').forEach(function (c) { c.classList.add('bump'); setTimeout(function () { c.classList.remove('bump'); }, 250); });
   }
+  /*
+   * Las páginas salen de la caché de LiteSpeed con el carrito vacío. Si la persona sí tiene productos (cookie de WooCommerce),
+   * se piden los fragmentos (contador + mini carrito) una vez y se guardan por pestaña mientras el carrito no cambie.
+   * Quien no tiene carrito no hace ninguna petición extra (a diferencia de wc-cart-fragments).
+   */
+  var cookie = function (n) { var m = document.cookie.match('(?:^|; )' + n + '=([^;]*)'); return m ? decodeURIComponent(m[1]) : ''; };
+  var store = {
+    get: function (k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+  };
+  function applyFragments(frags) {
+    if (!frags || !window.jQuery) return;
+    window.jQuery.each(frags, function (sel, html) { window.jQuery(sel).replaceWith(html); });
+    window.jQuery(document.body).trigger('wc_fragments_refreshed');
+  }
+  function saveFragments(frags, hash) {
+    if (!frags) return;
+    store.set('gt_frag', JSON.stringify(frags));
+    store.set('gt_frag_hash', hash || cookie('woocommerce_cart_hash'));
+  }
+  var cls = document.body.classList;
+  if (cookie('woocommerce_items_in_cart') && !cls.contains('woocommerce-cart') && !cls.contains('woocommerce-checkout')) {
+    var hash = cookie('woocommerce_cart_hash'), saved = store.get('gt_frag');
+    if (saved && hash && store.get('gt_frag_hash') === hash) {
+      try { applyFragments(JSON.parse(saved)); } catch (e) {}
+    } else {
+      var wp = window.woocommerce_params || window.wc_add_to_cart_params || {};
+      var url = (wp.wc_ajax_url || '/?wc-ajax=%%endpoint%%').replace('%%endpoint%%', 'get_refreshed_fragments');
+      fetch(url, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { if (d && d.fragments) { applyFragments(d.fragments); saveFragments(d.fragments, d.cart_hash); } })
+        .catch(function () {});
+    }
+  }
   if (window.jQuery) {
-    window.jQuery(document.body).on('added_to_cart', function () {
+    window.jQuery(document.body).on('added_to_cart', function (e, frags, hash) {
+      saveFragments(frags, hash);
       setTimeout(bump, 60);
-      if (!document.body.classList.contains('woocommerce-cart')) openLayer('gt-cart');
+      if (!cls.contains('woocommerce-cart')) openLayer('gt-cart');
     });
-    window.jQuery(document.body).on('wc_fragments_refreshed wc_fragments_loaded', function () { /* el contador llega en los fragmentos */ });
+    window.jQuery(document.body).on('removed_from_cart', function (e, frags, hash) { saveFragments(frags, hash); });
   }
 })();

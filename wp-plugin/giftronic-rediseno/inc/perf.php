@@ -66,6 +66,29 @@ add_action('wp_enqueue_scripts', 'gt_trim_assets', 9999);
 add_action('wp_head', 'gt_trim_assets', 7);
 add_action('wp_footer', 'gt_trim_assets', 1);
 
+/**
+ * SureCart imprime en el pie su carrito lateral y un ícono flotante (en modo de prueba). En las páginas que vende WooCommerce
+ * no sirven y, sin sus estilos, quedarían visibles: se quitan sus funciones del pie (se reconocen por el archivo donde están).
+ */
+add_action('wp_footer', 'gt_drop_surecart_footer', 0);
+function gt_drop_surecart_footer() {
+  if (!gt_on() || !gt_opt('slim', 1) || (!gt_is_own_view() && !gt_is_woo_page())) return;
+  global $wp_filter;
+  if (empty($wp_filter['wp_footer'])) return;
+  foreach ($wp_filter['wp_footer']->callbacks as $prio => $cbs) {
+    foreach ($cbs as $cb) {
+      $fn = $cb['function'];
+      try {
+        if (is_array($fn)) $file = (new ReflectionMethod(is_object($fn[0]) ? get_class($fn[0]) : $fn[0], $fn[1]))->getFileName();
+        elseif (is_string($fn) && strpos($fn, '::') === false && function_exists($fn)) $file = (new ReflectionFunction($fn))->getFileName();
+        elseif ($fn instanceof Closure) $file = (new ReflectionFunction($fn))->getFileName();
+        else $file = '';
+      } catch (Exception $e) { $file = ''; }
+      if ($file && strpos(wp_normalize_path($file), '/plugins/surecart/') !== false) remove_action('wp_footer', $fn, $prio);
+    }
+  }
+}
+
 /** Sprite de íconos: una vez por página, al abrir el <body> (o al final si el tema no llama a wp_body_open). */
 add_action('wp_body_open', 'gt_print_sprite', 1);
 add_action('wp_footer', 'gt_print_sprite', 1);

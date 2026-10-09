@@ -13,9 +13,15 @@ function gt_is_checkout() {
  */
 function gt_logo($href = '', $label = 'Giftronic04.com, ir al inicio', $where = 'hdr') {
   $href = $href ? $href : home_url('/');
-  $id = (int) get_theme_mod('custom_logo');
   $img = '';
-  if ($id) {
+  $id = (int) gt_opt('logo_id');
+  if (!$id) {
+    // Logo oscuro que usaba la cabecera anterior (el «logo del sitio» configurado en WordPress es una versión con fondo blanco).
+    $up = wp_get_upload_dir();
+    $b = esc_url($up['baseurl'] . '/2021/08/MOVIL-2');
+    $img = '<img class="gt-logo-img" src="' . $b . '-768x256.jpg" srcset="' . $b . '-300x100.jpg 300w, ' . $b . '-768x256.jpg 768w, ' . $b . '-1024x341.jpg 1024w, ' . $b . '-1536x512.jpg 1536w" sizes="(min-width:1024px) 300px, 210px" width="768" height="256" alt="Giftronic04.com — Estamos a tu servicio" decoding="async" loading="' . ($where === 'foot' ? 'lazy' : 'eager') . '">';
+  }
+  if (!$img && $id) {
     $img = wp_get_attachment_image($id, 'medium_large', false, array(
       'class'    => 'gt-logo-img',
       'alt'      => 'Giftronic04.com — Estamos a tu servicio',
