@@ -6,11 +6,29 @@ function gt_is_checkout() {
   return function_exists('is_checkout') && is_checkout() && !is_wc_endpoint_url('order-received');
 }
 
-function gt_logo($href = '', $label = 'Giftronic04.com, ir al inicio') {
+/**
+ * Logo real de la tienda (el que está en Apariencia → Personalizar → Identidad del sitio).
+ * La imagen trae mucho fondo negro arriba y abajo: el CSS la recorta a la franja del logo (6,7:1) y la funde con el negro de la cabecera.
+ * Si no hay logo configurado, se usa el dibujo del prototipo.
+ */
+function gt_logo($href = '', $label = 'Giftronic04.com, ir al inicio', $where = 'hdr') {
   $href = $href ? $href : home_url('/');
-  return '<a class="gt-logo" href="' . esc_url($href) . '" aria-label="' . esc_attr($label) . '">'
-    . '<svg class="gt-logo-mark" viewBox="0 0 34 30" aria-hidden="true"><rect x="1" y="1" width="32" height="21" rx="4" fill="#FF6B00"/><rect x="4.5" y="4.5" width="25" height="14" rx="1.6" fill="#0B0B0F"/><path d="M7.5 15.5 13 10l3.5 3 5-5" stroke="#FF6B00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 28.5h8M17 22.5v6" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/></svg>'
-    . '<span class="gt-logo-word">GIFTRONIC<b>04</b><small>.COM</small></span></a>';
+  $id = (int) get_theme_mod('custom_logo');
+  $img = '';
+  if ($id) {
+    $img = wp_get_attachment_image($id, 'medium_large', false, array(
+      'class'    => 'gt-logo-img',
+      'alt'      => 'Giftronic04.com — Estamos a tu servicio',
+      'loading'  => $where === 'foot' ? 'lazy' : 'eager',
+      'decoding' => 'async',
+      'sizes'    => '(min-width:1024px) 300px, 210px',
+    ));
+  }
+  if (!$img) {
+    $img = '<svg class="gt-logo-mark" viewBox="0 0 34 30" aria-hidden="true"><rect x="1" y="1" width="32" height="21" rx="4" fill="#FF6B00"/><rect x="4.5" y="4.5" width="25" height="14" rx="1.6" fill="#0B0B0F"/><path d="M7.5 15.5 13 10l3.5 3 5-5" stroke="#FF6B00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 28.5h8M17 22.5v6" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/></svg>'
+      . '<span class="gt-logo-word">GIFTRONIC<b>04</b><small>.COM</small></span>';
+  }
+  return '<a class="gt-logo" href="' . esc_url($href) . '" aria-label="' . esc_attr($label) . '">' . $img . '</a>';
 }
 
 function gt_cart_count() {
@@ -58,9 +76,9 @@ function gt_header() {
         <div class="gt-suggest" id="gt-suggest" role="listbox" aria-label="Sugerencias de búsqueda" hidden></div>
       </form>
       <div class="gt-hdr-actions">
-        <a class="gt-hdr-act gt-only-lg" href="<?php echo esc_url(gt_wa('Hola, quiero asesoría para comprar en Giftronic04.com')); ?>" target="_blank" rel="noopener"><?php echo gt_ic('chat', 22); ?><span class="t"><small>Asesoría</small>WhatsApp</span></a>
-        <a class="gt-hdr-act gt-only-lg" href="<?php echo esc_url($acct); ?>"><?php echo gt_ic('user', 22); ?><span class="t"><small><?php echo esc_html($hi); ?></small>Mi cuenta</span></a>
-        <a class="gt-hdr-act" href="<?php echo esc_url(wc_get_cart_url()); ?>" data-open="gt-cart" aria-label="Carrito"><?php echo gt_ic('cart', 22); ?><span class="gt-count gt-cart-count" data-n="<?php echo (int) $n; ?>"><?php echo (int) $n; ?></span><span class="t"><small>Tu compra</small>Carrito</span></a>
+        <a class="gt-hdr-act gt-only-lg" href="<?php echo esc_url(gt_wa('Hola, quiero asesoría para comprar en Giftronic04.com')); ?>" target="_blank" rel="noopener"><?php echo gt_ic('chat', 22); ?><span class="t"><small aria-hidden="true">Asesoría</small>WhatsApp</span></a>
+        <a class="gt-hdr-act gt-only-lg" href="<?php echo esc_url($acct); ?>"><?php echo gt_ic('user', 22); ?><span class="t"><small aria-hidden="true"><?php echo esc_html($hi); ?></small>Mi cuenta</span></a>
+        <a class="gt-hdr-act" href="<?php echo esc_url(wc_get_cart_url()); ?>" data-open="gt-cart"><?php echo gt_ic('cart', 22); ?><span class="gt-count gt-cart-count" data-n="<?php echo (int) $n; ?>" aria-hidden="true"><?php echo (int) $n; ?></span><span class="t"><small aria-hidden="true">Tu compra</small>Carrito</span></a>
       </div>
     </div>
     <nav class="gt-catnav" aria-label="Categorías">
@@ -71,7 +89,8 @@ function gt_header() {
         <?php endforeach; ?>
         <a class="deal" href="<?php echo esc_url(gt_offers_url()); ?>"><?php echo gt_ic('tag', 16); ?>Ofertas</a>
       </div>
-      <div class="gt-mega" id="gt-mega" hidden><?php echo gt_mega_html(); ?></div>
+      <div class="gt-mega" id="gt-mega" hidden></div>
+      <template id="gt-mega-tpl"><?php echo gt_mega_html(); ?></template>
     </nav>
   </header>
   <div id="gt-main" tabindex="-1"></div>
@@ -131,7 +150,7 @@ function gt_build_mega() {
     if ($feat) {
       $p = $feat[0];
       $pr = gt_prices($p);
-      $h .= '<a class="gt-mega-feat" href="' . esc_url(get_permalink($p->get_id())) . '"><small>Destacado</small>' . gt_img($p, 'woocommerce_thumbnail', 'gt-art')
+      $h .= '<a class="gt-mega-feat" href="' . esc_url(get_permalink($p->get_id())) . '"><small>Destacado</small>' . gt_img($p, 'woocommerce_thumbnail', 'gt-art', false, 0, gt_sizes('mega'))
         . '<strong>' . esc_html(gt_pdata($p)['short']) . '</strong>'
         . ($pr['was'] ? '<span class="gt-price-was"><s>' . gt_money($pr['was']) . '</s> <b>-' . (int) $pr['off'] . '%</b></span>' : '')
         . '<span class="gt-price">' . gt_money($pr['now']) . '</span></a>';
@@ -155,6 +174,10 @@ function gt_build_menu() {
 
 /** Medios de pago activos en la tienda (con nombres cortos). */
 function gt_pay_methods() {
+  static $memo = null;
+  if ($memo !== null) return $memo;
+  $cached = get_transient('gt_pay_' . GT_VER);
+  if (is_array($cached)) return $memo = $cached;
   $labels = array(
     'woo-mercado-pago-basic' => 'Mercado Pago', 'woo-mercado-pago-custom' => 'Tarjeta débito y crédito', 'woo-mercado-pago-pse' => 'PSE',
     'openpay_pse' => 'PSE', 'bacs' => 'Transferencia bancaria', 'wompi' => 'Wompi', 'addi' => 'Addi', 'payvalida' => 'Payvalida',
@@ -168,7 +191,9 @@ function gt_pay_methods() {
       if ($label !== '') $out[$label] = true;
     }
   }
-  return array_keys($out);
+  $memo = array_keys($out);
+  set_transient('gt_pay_' . GT_VER, $memo, 12 * HOUR_IN_SECONDS);
+  return $memo;
 }
 
 /** Enlace a una página solo si está publicada. */
@@ -196,7 +221,7 @@ function gt_footer() {
     <div class="gt-wrap">
       <div class="gt-foot-grid">
         <div class="gt-foot-brand">
-          <?php echo gt_logo(); ?>
+          <?php echo gt_logo('', 'Giftronic04.com, ir al inicio', 'foot'); ?>
           <p>Tienda de tecnología en Colombia: portátiles, televisores, impresoras, gaming y accesorios con envío a todo el país.</p>
         </div>
         <div><h2>Categorías</h2><ul>
@@ -239,7 +264,7 @@ function gt_layers() {
     <a href="<?php echo esc_url(home_url('/')); ?>"<?php echo is_front_page() ? ' aria-current="page"' : ''; ?>><?php echo gt_ic('home', 22); ?>Inicio</a>
     <button type="button" data-open="gt-menu"><?php echo gt_ic('grid', 22); ?>Categorías</button>
     <button type="button" data-search><?php echo gt_ic('search', 22); ?>Buscar</button>
-    <a href="<?php echo esc_url(wc_get_cart_url()); ?>" data-open="gt-cart"><?php echo gt_ic('cart', 22); ?><span class="gt-count gt-cart-count" data-n="<?php echo (int) $n; ?>"><?php echo (int) $n; ?></span>Carrito</a>
+    <a href="<?php echo esc_url(wc_get_cart_url()); ?>" data-open="gt-cart"><?php echo gt_ic('cart', 22); ?><span class="gt-count gt-cart-count" data-n="<?php echo (int) $n; ?>" aria-hidden="true"><?php echo (int) $n; ?></span>Carrito</a>
     <a href="<?php echo esc_url($acct); ?>"<?php echo is_account_page() ? ' aria-current="page"' : ''; ?>><?php echo gt_ic('user', 22); ?>Cuenta</a>
   </nav>
   <a class="gt-wa-float" href="<?php echo esc_url(gt_wa('Hola, quiero asesoría para comprar en Giftronic04.com')); ?>" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp"><?php echo gt_ic('chat', 28); ?></a>
@@ -249,7 +274,7 @@ function gt_layers() {
     <div class="gt-sheet" role="dialog" aria-modal="true" aria-labelledby="gt-menu-t">
       <div class="gt-sheet-h"><h2 id="gt-menu-t">Categorías</h2><button type="button" class="gt-icon-btn" data-close aria-label="Cerrar menú"><?php echo gt_ic('x', 22); ?></button></div>
       <div class="gt-sheet-b">
-        <?php echo gt_menu_html(); ?>
+        <div id="gt-mfams"></div><template id="gt-menu-tpl"><?php echo gt_menu_html(); ?></template>
         <div class="gt-m-quick">
           <a class="gt-btn gt-btn-ghost" href="<?php echo esc_url(gt_offers_url()); ?>"><?php echo gt_ic('tag', 18); ?>Ofertas</a>
           <a class="gt-btn gt-btn-ghost" href="<?php echo esc_url($acct); ?>"><?php echo gt_ic('user', 18); ?>Mi cuenta</a>

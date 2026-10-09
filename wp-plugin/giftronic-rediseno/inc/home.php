@@ -2,6 +2,8 @@
 /** Datos de la portada: producto destacado, opiniones reales y marcas del catálogo. */
 if (!defined('ABSPATH')) exit;
 
+require_once __DIR__ . '/home-parts.php';
+
 function gt_hero_product() {
   $id = (int) gt_opt('hero_id');
   if ($id) {

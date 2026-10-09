@@ -84,9 +84,13 @@ function gt_listing_rows() {
   if ($tax) $args['tax_query'] = $tax;
   $s = get_search_query(false);
   if ($s !== '') $args['s'] = $s;
+  // Las búsquedas no se guardan (serían una entrada por cada texto buscado).
+  $ckey = $s === '' ? gt_cache_key('rows_' . md5(wp_json_encode($args))) : '';
+  $cached = $ckey ? get_transient($ckey) : false;
+  if (is_array($cached)) return $rows = $cached;
   $ids = get_posts($args);
   $rows = array();
-  if (!$ids) return $rows;
+  if (!$ids) { if ($ckey) set_transient($ckey, $rows, 30 * MINUTE_IN_SECONDS); return $rows; }
   update_meta_cache('post', $ids);
   update_object_term_cache($ids, 'product');
   $sale = array_flip(wc_get_product_ids_on_sale());
@@ -105,6 +109,7 @@ function gt_listing_rows() {
       'sale' => isset($sale[$id]),
     );
   }
+  if ($ckey) set_transient($ckey, $rows, 30 * MINUTE_IN_SECONDS);
   return $rows;
 }
 

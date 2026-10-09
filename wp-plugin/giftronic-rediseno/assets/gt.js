@@ -30,12 +30,21 @@
     onScroll();
   }
 
+  /* Contenido pesado (mega menú, menú móvil) guardado en <template>: se inserta la primera vez que se usa. */
+  function fromTemplate(targetId, tplId) {
+    var t = document.getElementById(targetId), tpl = document.getElementById(tplId);
+    if (!t || !tpl || t.getAttribute('data-filled')) return;
+    t.appendChild(tpl.content.cloneNode(true));
+    t.setAttribute('data-filled', '1');
+  }
+
   /* ---------- Paneles (menú, carrito) ---------- */
   var lastFocus = null;
   function openLayer(id) {
     var l = document.getElementById(id);
     if (!l) return false;
     closeMega();
+    fromTemplate('gt-mfams', 'gt-menu-tpl');
     lastFocus = document.activeElement;
     l.hidden = false;
     document.body.classList.add('gt-lock');
@@ -96,7 +105,11 @@
     $$('.gt-mega-panel', mega).forEach(function (p) { p.hidden = p.id !== 'gt-famp-' + i; });
   }
   if (megaBtn && mega) {
+    var fillMega = function () { fromTemplate('gt-mega', 'gt-mega-tpl'); };
+    megaBtn.addEventListener('pointerenter', fillMega);
+    megaBtn.addEventListener('focus', fillMega);
     megaBtn.addEventListener('click', function () {
+      fillMega();
       var open = mega.hidden;
       mega.hidden = !open;
       megaBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -259,25 +272,47 @@
     if (b) b.addEventListener('click', function () { s.classList.add('is-open'); });
   });
 
-  /* ---------- Galería de la ficha ---------- */
+  /* ---------- Galería de la ficha: un solo carrusel (dedo en el celular; flechas y miniaturas en escritorio) ---------- */
   var gal = $('[data-gal]');
   var zoomEl = null;
   function closeZoom() { if (!zoomEl) return false; zoomEl.remove(); zoomEl = null; document.body.classList.remove('gt-lock'); return true; }
   if (gal) {
-    var slides = $$('[data-slide]', gal), thumbs = $$('[data-thumb]', gal), cur = 0, idx = $('[data-gal-i]', gal);
-    var show = function (i) {
-      if (!slides.length) return;
-      cur = (i + slides.length) % slides.length;
-      slides.forEach(function (s, k) { s.hidden = k !== cur; });
-      thumbs.forEach(function (t, k) { if (k === cur) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current'); });
-      if (idx) idx.textContent = cur + 1;
-      var img = $('img', slides[cur]); if (img && img.loading === 'lazy') img.loading = 'eager';
+    var track = $('[data-gal-track]', gal), slides = $$('[data-slide]', gal), thumbs = $$('[data-thumb]', gal);
+    var dots = $$('.gt-gal-dots i', gal), idx = $('[data-gal-i]', gal), cur = 0, warmed = false;
+    // Las fotos que esperan fuera de la fila se piden en cuanto la persona usa la galería.
+    var warm = function () { if (warmed) return; warmed = true; slides.forEach(function (sl) { var im = $('img', sl); if (im) im.loading = 'eager'; }); };
+    var mark = function (i) {
+      cur = i;
+      thumbs.forEach(function (t, k) { if (k === i) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current'); });
+      dots.forEach(function (d, k) { d.classList.toggle('on', k === i); });
+      slides.forEach(function (sl, k) { sl.tabIndex = k === i ? 0 : -1; });
+      if (idx) idx.textContent = i + 1;
     };
+    var go = function (i) {
+      if (!track || !slides.length) return;
+      warm();
+      i = (i + slides.length) % slides.length;
+      track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+      mark(i);
+    };
+    if (track) {
+      var raf = 0;
+      track.addEventListener('scroll', function () {
+        warm();
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(function () { var i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth)); if (i !== cur) mark(i); });
+      }, { passive: true });
+      track.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); }
+      });
+    }
+    gal.addEventListener('pointerenter', warm, { once: true });
     gal.addEventListener('click', function (e) {
       var t = e.target.closest('[data-thumb]');
-      if (t) { show(+t.dataset.thumb); return; }
-      if (e.target.closest('[data-gal-prev]')) { show(cur - 1); return; }
-      if (e.target.closest('[data-gal-next]')) { show(cur + 1); return; }
+      if (t) { go(+t.dataset.thumb); return; }
+      if (e.target.closest('[data-gal-prev]')) { go(cur - 1); return; }
+      if (e.target.closest('[data-gal-next]')) { go(cur + 1); return; }
       var st = e.target.closest('[data-slide]');
       if (st) {
         e.preventDefault();
@@ -292,13 +327,6 @@
         $('button', zoomEl).focus();
       }
     });
-    var track = $('[data-gal-track]', gal), dots = $$('.gt-gal-dots i', gal);
-    if (track && dots.length) {
-      track.addEventListener('scroll', function () {
-        var i = Math.round(track.scrollLeft / track.clientWidth);
-        dots.forEach(function (d, k) { d.classList.toggle('on', k === i); });
-      }, { passive: true });
-    }
   }
 
   /* ---------- Barra fija de compra (móvil) ---------- */
@@ -326,6 +354,30 @@
       cf.scrollIntoView({ behavior: 'smooth', block: 'center' });
       var sel = $('select', cf); if (sel) setTimeout(function () { sel.focus(); }, 400);
     });
+  }
+
+  /* ---------- Widget de financiación del Banco de Bogotá: tarde y solo si se va a ver ---------- */
+  var bdbData = document.getElementById('gt-bdb');
+  if (bdbData) {
+    var bdbSrc = ''; try { bdbSrc = JSON.parse(bdbData.textContent).src || ''; } catch (err) {}
+    var bdbEl = document.querySelector('bdb-ec4-financing-method');
+    var bdbLoad = function () {
+      if (!bdbSrc || document.getElementById('bdb-ec4-script-js')) return;
+      var sc = document.createElement('script'); sc.id = 'bdb-ec4-script-js'; sc.src = bdbSrc; sc.async = true; document.body.appendChild(sc);
+    };
+    var bdbWatch = function () {
+      if (!bdbEl) return;
+      if (!('IntersectionObserver' in window)) { bdbLoad(); return; }
+      var ob = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { ob.disconnect(); bdbLoad(); } }, { rootMargin: '400px 0px' });
+      ob.observe(bdbEl);
+    };
+    if (document.readyState === 'complete') bdbWatch(); else window.addEventListener('load', function () { setTimeout(bdbWatch, 1500); });
+  }
+
+  /* ---------- Widgets de terceros: completar el texto alternativo de sus logos ---------- */
+  if ('MutationObserver' in window) {
+    var fixAlt = function () { $$('img.addi-banner-info__addi-logo:not([alt])').forEach(function (i) { i.alt = 'Addi'; }); };
+    new MutationObserver(fixAlt).observe(document.body, { childList: true, subtree: true });
   }
 
   /* ---------- Carrito: abrir el panel al agregar y animar el contador ---------- */

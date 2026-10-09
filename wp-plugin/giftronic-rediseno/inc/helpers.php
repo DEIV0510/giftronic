@@ -77,8 +77,21 @@ function gt_wa($text = '') {
   return 'https://wa.me/' . gt_wa_number() . ($text !== '' ? '?text=' . rawurlencode($text) : '');
 }
 
-/** Imagen principal (o un ícono si el producto no tiene foto). */
-function gt_img($p, $size = 'woocommerce_thumbnail', $class = 'gt-art', $eager = false, $img_id = 0) {
+/** Ancho real con que se ve cada imagen (para que el navegador baje el archivo justo en srcset). */
+function gt_sizes($where) {
+  $m = array(
+    'card' => '(min-width:1280px) 300px, (min-width:1024px) 24vw, (min-width:768px) 31vw, 46vw',
+    'tile' => '(min-width:1024px) 150px, (min-width:768px) 22vw, 64px',
+    'hero' => '(min-width:1024px) 470px, 80vw',
+    'mega' => '250px',
+    'gal'  => '(min-width:1280px) 640px, (min-width:1024px) 50vw, 100vw',
+    'galm' => '230px',
+  );
+  return isset($m[$where]) ? $m[$where] : '';
+}
+
+/** Imagen principal (o un ícono si el producto no tiene foto). $high: solo para la imagen más importante de la página (LCP). */
+function gt_img($p, $size = 'woocommerce_thumbnail', $class = 'gt-art', $eager = false, $img_id = 0, $sizes = '', $high = false) {
   $id = $img_id ? $img_id : $p->get_image_id();
   if (!$id && $p->get_parent_id()) {
     $parent = wc_get_product($p->get_parent_id());
@@ -86,7 +99,9 @@ function gt_img($p, $size = 'woocommerce_thumbnail', $class = 'gt-art', $eager =
   }
   if ($id) {
     $attr = array('class' => $class, 'alt' => gt_pdata($p)['short'], 'decoding' => 'async');
-    if ($eager) { $attr['fetchpriority'] = 'high'; $attr['loading'] = 'eager'; } else { $attr['loading'] = 'lazy'; }
+    $attr['loading'] = $eager ? 'eager' : 'lazy';
+    if ($high) $attr['fetchpriority'] = 'high';
+    if ($sizes) $attr['sizes'] = $sizes;
     $html = wp_get_attachment_image($id, $size, false, $attr);
     if ($html) return $html;
   }
@@ -102,7 +117,7 @@ function gt_card($p, $eager = false) {
   $out = !$p->is_in_stock();
   $h = '<article class="gt-card' . ($out ? ' is-out' : '') . '">';
   $h .= '<a class="gt-card-media" href="' . esc_url($url) . '" tabindex="-1" aria-hidden="true">';
-  $h .= gt_img($p, 'woocommerce_thumbnail', 'gt-art', $eager);
+  $h .= gt_img($p, 'woocommerce_thumbnail', 'gt-art', $eager, 0, gt_sizes('card'));
   $h .= '</a>';
   $badges = ($out ? '<span class="gt-badge gt-badge-out">Agotado</span>' : '') . gt_badges($p, $pr);
   if ($badges) $h .= '<div class="gt-card-badges">' . $badges . '</div>';
@@ -142,7 +157,7 @@ function gt_sec_head($title, $sub = '', $link = '', $link_text = 'Ver todo', $ta
   $h = '<div class="gt-sec-h"><div><' . $tag . '>' . esc_html($title) . '</' . $tag . '>';
   if ($sub) $h .= '<p>' . esc_html($sub) . '</p>';
   $h .= '</div>';
-  if ($link) $h .= '<a class="gt-link" href="' . esc_url($link) . '">' . esc_html($link_text) . gt_ic('right', 16) . '</a>';
+  if ($link) $h .= '<a class="gt-link" href="' . esc_url($link) . '">' . esc_html($link_text) . '<span class="screen-reader-text">: ' . esc_html($title) . '</span>' . gt_ic('right', 16) . '</a>';
   return $h . '</div>';
 }
 
@@ -152,8 +167,8 @@ function gt_rail($products, $label) {
   if (!$products) return '';
   $h = '<div class="gt-rail" data-rail><button type="button" class="gt-rail-btn prev" data-rail-prev aria-label="Anteriores: ' . esc_attr($label) . '" disabled>' . gt_ic('left', 22) . '</button>';
   $h .= '<div class="gt-rail-track" role="list" aria-label="' . esc_attr($label) . '" tabindex="0">';
-  $i = 0;
-  foreach ($products as $p) $h .= '<div role="listitem">' . gt_card($p, ++$i <= 4) . '</div>';
+  // Perezosas: gt.js las pide en cuanto el carrusel se acerca a la pantalla (también las que quedan fuera de la fila).
+  foreach ($products as $p) $h .= '<div role="listitem">' . gt_card($p) . '</div>';
   $h .= '</div><button type="button" class="gt-rail-btn next" data-rail-next aria-label="Siguientes: ' . esc_attr($label) . '">' . gt_ic('right', 22) . '</button></div>';
   return $h;
 }
@@ -164,7 +179,8 @@ function gt_rail($products, $label) {
  */
 function gt_products($args) {
   $a = wp_parse_args($args, array('cat' => array(), 'ids' => array(), 'on_sale' => false, 'orderby' => 'popularity', 'limit' => 12, 'exclude' => array(), 'instock' => true));
-  $q = array('status' => 'publish', 'visibility' => 'catalog', 'limit' => max(24, $a['limit'] * 2), 'return' => 'objects');
+  // Un margen pequeño para reemplazar los agotados sin cargar decenas de productos por carrusel.
+  $q = array('status' => 'publish', 'visibility' => 'catalog', 'limit' => $a['orderby'] === 'discount' ? 40 : $a['limit'] + 8, 'return' => 'objects');
   if ($a['cat']) {
     $q['category'] = array();
     foreach ((array) $a['cat'] as $c) {
@@ -265,11 +281,11 @@ function gt_term_link($t) {
 function gt_cat_image($t, $class = 'gt-art') {
   $thumb = (int) get_term_meta($t->term_id, 'thumbnail_id', true);
   if ($thumb) {
-    $img = wp_get_attachment_image($thumb, 'woocommerce_thumbnail', false, array('class' => $class, 'alt' => '', 'loading' => 'lazy'));
+    $img = wp_get_attachment_image($thumb, 'woocommerce_thumbnail', false, array('class' => $class, 'alt' => '', 'loading' => 'lazy', 'sizes' => gt_sizes('tile')));
     if ($img) return $img;
   }
   $ps = gt_products(array('cat' => array($t->term_id), 'limit' => 1));
-  if ($ps) return gt_img($ps[0], 'woocommerce_thumbnail', $class);
+  if ($ps) return gt_img($ps[0], 'woocommerce_thumbnail', $class, false, 0, gt_sizes('tile'));
   return '<span class="' . esc_attr($class) . ' gt-noimg">' . gt_ic(gt_cat_icon($t->name), 40, 1.4) . '</span>';
 }
 

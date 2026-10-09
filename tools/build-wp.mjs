@@ -61,7 +61,9 @@ function prefixCss(css) {
 
 const files = readdirSync(cssDir).filter(f => f.endsWith('.css')).sort();
 const src = files.map(f => readFileSync(cssDir + f, 'utf8')).join('\n');
-const css = '/* Giftronic Rediseño — generado por tools/build-wp.mjs desde wp-plugin/css/. No editar a mano. */\n' + prefixCss(src);
+// Minificado conservador: solo espacios junto a llaves, punto y coma y comas (los espacios de selectores y valores quedan).
+const minify = s => s.replace(/\s*([{};])\s*/g, '$1').replace(/,\s+/g, ',').replace(/;}/g, '}').replace(/\n+/g, '');
+const css = '/* Giftronic Rediseño — generado por tools/build-wp.mjs desde wp-plugin/css/. No editar a mano. */\n' + minify(prefixCss(src));
 mkdirSync(plugin + 'assets', { recursive: true });
 writeFileSync(plugin + 'assets/gt.css', css);
 console.log('gt.css', (css.length / 1024).toFixed(1), 'KB desde', files.join(', '));

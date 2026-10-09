@@ -35,49 +35,41 @@ function gt_gallery_html($p) {
   $n = count($ids);
   $badges = gt_badges($p);
   if (!$n) {
-    return '<div class="gt-gal"><div class="gt-gal-main"><div class="gt-gal-stage">' . gt_img($p, 'woocommerce_single', 'gt-art', true) . '</div></div></div>';
+    return '<div class="gt-gal"><div class="gt-gal-main"><div class="gt-gal-track"><div class="gt-gal-slide">' . gt_img($p, 'woocommerce_single', 'gt-art', true, 0, gt_sizes('gal'), true) . '</div></div></div></div>';
   }
-  $h = '<div class="gt-gal" data-gal>';
-  // Escritorio: foto grande + miniaturas
-  $h .= '<div class="gt-gal-d"><div class="gt-gal-main">';
+  // Una sola galería para todas las pantallas: carrusel con scroll-snap (se desliza con el dedo en el celular;
+  // flechas y miniaturas en escritorio). Así cada foto se descarga una vez y solo la primera va con prioridad alta.
+  $h = '<div class="gt-gal' . ($n > 1 ? ' has-many' : '') . '" data-gal>';
+  $h .= '<div class="gt-gal-main">';
   if ($badges) $h .= '<div class="gt-gal-kind">' . $badges . '</div>';
+  $h .= '<div class="gt-gal-track" data-gal-track tabindex="0" role="group" aria-roledescription="carrusel" aria-label="Fotos del producto">';
   foreach ($ids as $i => $id) {
     $full = wp_get_attachment_image_url($id, 'full');
     $alt = $d['short'] . ($n > 1 ? ' — foto ' . ($i + 1) . ' de ' . $n : '');
-    $h .= '<a class="gt-gal-stage" href="' . esc_url($full) . '" data-slide="' . $i . '"' . ($i ? ' hidden' : '') . ' aria-label="Ampliar foto ' . ($i + 1) . '">'
-      . wp_get_attachment_image($id, 'woocommerce_single', false, array('class' => 'gt-art', 'alt' => $alt, 'loading' => $i ? 'lazy' : 'eager', 'fetchpriority' => $i ? 'auto' : 'high', 'decoding' => 'async'))
+    $h .= '<a class="gt-gal-slide" href="' . esc_url($full) . '" data-slide="' . $i . '" aria-label="Ampliar foto ' . ($i + 1) . '"' . ($i ? ' tabindex="-1"' : '') . '>'
+      . wp_get_attachment_image($id, 'woocommerce_single', false, array('class' => 'gt-art', 'alt' => $alt, 'loading' => $i ? 'lazy' : 'eager', 'fetchpriority' => $i ? 'auto' : 'high', 'decoding' => 'async', 'sizes' => gt_sizes('gal')))
       . '</a>';
   }
+  $h .= '</div>';
   if ($n > 1) {
     $h .= '<button type="button" class="gt-gal-arrow prev" data-gal-prev aria-label="Foto anterior">' . gt_ic('left', 22) . '</button>';
     $h .= '<button type="button" class="gt-gal-arrow next" data-gal-next aria-label="Foto siguiente">' . gt_ic('right', 22) . '</button>';
     $h .= '<span class="gt-gal-count" aria-live="polite"><span data-gal-i>1</span> / ' . $n . '</span>';
-  }
-  $h .= '<span class="gt-gal-hint">' . gt_ic('zoom', 14) . 'Clic para ampliar</span>';
-  $h .= '</div>';
-  if ($n > 1) {
-    $h .= '<div class="gt-thumbs" role="group" aria-label="Fotos del producto">';
-    foreach ($ids as $i => $id) {
-      $h .= '<button type="button" class="gt-thumb" data-thumb="' . $i . '" aria-label="Ver foto ' . ($i + 1) . '"' . ($i ? '' : ' aria-current="true"') . '>'
-        . wp_get_attachment_image($id, 'woocommerce_gallery_thumbnail', false, array('class' => 'gt-art', 'alt' => '', 'loading' => 'lazy')) . '</button>';
-    }
-    $h .= '</div>';
-  }
-  $h .= '</div>';
-  // Móvil: carrusel con scroll-snap
-  $h .= '<div class="gt-gal-m">';
-  if ($badges) $h .= '<div class="gt-gal-kind">' . $badges . '</div>';
-  $h .= '<div class="gt-gal-m-track" data-gal-track tabindex="0" aria-label="Fotos del producto">';
-  foreach ($ids as $i => $id) {
-    $h .= '<div>' . wp_get_attachment_image($id, 'woocommerce_single', false, array('class' => 'gt-art', 'alt' => $d['short'], 'loading' => $i ? 'lazy' : 'eager', 'decoding' => 'async')) . '</div>';
-  }
-  $h .= '</div>';
-  if ($n > 1) {
     $h .= '<div class="gt-gal-dots" aria-hidden="true">';
     for ($i = 0; $i < $n; $i++) $h .= '<i' . ($i ? '' : ' class="on"') . '></i>';
     $h .= '</div>';
   }
-  $h .= '</div></div>';
+  $h .= '<span class="gt-gal-hint">' . gt_ic('zoom', 14) . 'Clic para ampliar</span>';
+  $h .= '</div>';
+  if ($n > 1) {
+    $h .= '<div class="gt-thumbs" role="group" aria-label="Elegir foto">';
+    foreach ($ids as $i => $id) {
+      $h .= '<button type="button" class="gt-thumb" data-thumb="' . $i . '" aria-label="Ver foto ' . ($i + 1) . '"' . ($i ? '' : ' aria-current="true"') . '>'
+        . wp_get_attachment_image($id, 'woocommerce_gallery_thumbnail', false, array('class' => 'gt-art', 'alt' => '', 'loading' => 'lazy', 'sizes' => '68px')) . '</button>';
+    }
+    $h .= '</div>';
+  }
+  $h .= '</div>';
   return $h;
 }
 

@@ -6,29 +6,32 @@
   .gt-pdp-top{grid-template-columns:minmax(0,55fr) minmax(0,45fr);column-gap:48px;align-items:start;padding-top:20px}
   .gt-gal{position:sticky;top:calc(var(--gt-hdr-top) + 140px)}
 }
-.gt-gal-d{display:none}
-.gt-gal-main{position:relative;aspect-ratio:1/1;background:#fff;border:1px solid var(--gt-border);overflow:hidden}
-.gt-gal-stage{position:absolute;inset:0;display:grid;place-items:center;cursor:zoom-in}
-.gt-gal-stage .gt-art{width:100%;height:100%;object-fit:contain;padding:6%;background:#fff}
-.gt-gal-kind{position:absolute;left:12px;top:12px;z-index:2;display:flex;gap:5px}
-.gt-gal-count{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.92);border:1px solid var(--gt-border);padding:4px 10px;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;z-index:2}
-.gt-gal-arrow{position:absolute!important;top:50%;transform:translateY(-50%);width:44px;height:44px;border:1px solid var(--gt-border)!important;background:rgba(255,255,255,.95)!important;display:grid!important;place-items:center;z-index:2;box-shadow:var(--gt-sh-1);color:var(--gt-text)!important}
-.gt-gal-arrow.prev{left:10px}.gt-gal-arrow.next{right:10px}
-.gt-gal-hint{position:absolute;right:12px;bottom:12px;z-index:2;font-size:12px;font-weight:700;color:var(--gt-muted-strong);background:rgba(255,255,255,.92);border:1px solid var(--gt-border);padding:4px 10px;display:inline-flex;align-items:center;gap:5px;pointer-events:none}
-.gt-thumbs{display:flex;gap:8px;overflow-x:auto;padding:10px 2px 4px;scrollbar-width:thin}
-.gt-thumb{flex:none;width:68px;height:68px;border:1.5px solid var(--gt-border)!important;background:#fff!important;padding:3px!important;overflow:hidden}
-.gt-thumb .gt-art{width:100%;height:100%;object-fit:contain}
-.gt-thumb[aria-current="true"]{border-color:var(--gt-text)!important;box-shadow:0 0 0 1px var(--gt-text)}
-.gt-gal-m{position:relative;margin-inline:-16px}
-.gt-gal-m-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;background:#fff;border-block:1px solid var(--gt-border)}
-.gt-gal-m-track::-webkit-scrollbar{display:none}
-.gt-gal-m-track>div{flex:0 0 100%;scroll-snap-align:center;height:210px;display:grid;grid-template-rows:100%;place-items:center}
-.gt-gal-m-track .gt-art{width:auto;height:100%;max-width:100%;object-fit:contain;padding:8px}
+/* Galería única: carrusel con scroll-snap. Celular: franja de 230 px a todo el ancho, se desliza con el dedo y muestra puntos.
+   Escritorio: cuadro 1:1 con flechas, contador, «clic para ampliar» y miniaturas. */
+.gt-gal-main{position:relative;background:#fff;border-block:1px solid var(--gt-border);margin-inline:-16px;height:230px}
+.gt-gal-track{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.gt-gal-track::-webkit-scrollbar{display:none}
+.gt-gal-slide{flex:0 0 100%;scroll-snap-align:center;display:grid;grid-template-rows:100%;place-items:center;height:100%;cursor:zoom-in}
+.gt-gal-slide .gt-art{width:100%;height:100%;object-fit:contain;padding:8px;background:#fff}
+.gt-gal-kind{position:absolute;left:24px;top:8px;z-index:2;display:flex;gap:5px;pointer-events:none}
+.gt-gal-count,.gt-gal-arrow,.gt-gal-hint,.gt-thumbs{display:none!important}
 .gt-gal-dots{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;gap:6px;pointer-events:none}
 .gt-gal-dots i{width:6px;height:6px;background:#C7CBD2;transition:width .2s,background-color .2s}
 .gt-gal-dots i.on{width:18px;background:var(--gt-ink)}
-.gt-gal-m .gt-gal-kind{top:8px;left:24px}
-@media (min-width:1024px){.gt-gal-d{display:block}.gt-gal-m{display:none}}
+@media (min-width:1024px){
+  .gt-gal-main{aspect-ratio:1/1;height:auto;margin-inline:0;border:1px solid var(--gt-border);overflow:hidden}
+  .gt-gal-slide .gt-art{padding:6%}
+  .gt-gal-kind{left:12px;top:12px}
+  .gt-gal-dots{display:none}
+  .gt-gal-hint{display:inline-flex!important;position:absolute;right:12px;bottom:12px;z-index:2;font-size:12px;font-weight:700;color:var(--gt-muted-strong);background:rgba(255,255,255,.92);border:1px solid var(--gt-border);padding:4px 10px;align-items:center;gap:5px;pointer-events:none}
+  .has-many .gt-gal-count{display:block!important;position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.92);border:1px solid var(--gt-border);padding:4px 10px;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;z-index:2}
+  .has-many .gt-gal-arrow{display:grid!important;position:absolute!important;top:50%;transform:translateY(-50%);width:44px;height:44px;border:1px solid var(--gt-border)!important;background:rgba(255,255,255,.95)!important;place-items:center;z-index:2;box-shadow:var(--gt-sh-1);color:var(--gt-text)!important}
+  .gt-gal-arrow.prev{left:10px}.gt-gal-arrow.next{right:10px}
+  .has-many .gt-thumbs{display:flex!important;gap:8px;overflow-x:auto;padding:10px 2px 4px;scrollbar-width:thin}
+}
+.gt-thumb{flex:none;width:68px;height:68px;border:1.5px solid var(--gt-border)!important;background:#fff!important;padding:3px!important;overflow:hidden}
+.gt-thumb .gt-art{width:100%;height:100%;object-fit:contain}
+.gt-thumb[aria-current="true"]{border-color:var(--gt-text)!important;box-shadow:0 0 0 1px var(--gt-text)}
 /* Visor ampliado */
 .gt-zoom{position:fixed;inset:var(--gt-hdr-top) 0 0 0;z-index:1200;background:rgba(11,11,15,.92);display:grid;place-items:center;padding:16px;cursor:zoom-out}
 .gt-zoom img{max-width:100%;max-height:100%;object-fit:contain;background:#fff}
@@ -240,3 +243,8 @@ body.woocommerce-cart .site-content a:not(.button):not(.remove),body.woocommerce
 .select2-results__option{color:var(--gt-text)}
 #order_review_heading{border:0!important;background:none!important;padding:0!important;margin:0 0 12px!important}
 #order_review{border:1px solid var(--gt-border)!important;background:#fff!important;padding:18px!important}
+
+/* Opiniones: etiquetas y fechas con contraste suficiente (el modo oscuro de Astra las pinta claras) */
+.gt-reviews :is(label,#reply-title,.comment-notes,.comment-form-cookies-consent){color:var(--gt-text)!important}
+.gt-reviews .woocommerce-review__published-date,.gt-reviews .woocommerce-review__dash{color:var(--gt-muted-strong)!important}
+.gt-reviews .star-rating,.gt-reviews .star-rating span,.gt-reviews p.stars a{color:#B45309}

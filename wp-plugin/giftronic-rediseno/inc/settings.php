@@ -5,6 +5,7 @@ if (!defined('ABSPATH')) exit;
 function gt_defaults() {
   return array(
     'live'       => 0,
+    'slim'       => 1,
     'home'       => 1,
     'wa'         => '573017913140',
     'email'      => 'info@giftronic04.com',
@@ -44,6 +45,7 @@ function gt_sanitize_opts($in) {
   $d = gt_defaults();
   return array(
     'live'       => empty($in['live']) ? 0 : 1,
+    'slim'       => empty($in['slim']) ? 0 : 1,
     'home'       => empty($in['home']) ? 0 : 1,
     'wa'         => preg_replace('/\D+/', '', isset($in['wa']) ? $in['wa'] : $d['wa']),
     'email'      => sanitize_email(isset($in['email']) ? $in['email'] : $d['email']),
@@ -63,6 +65,7 @@ function gt_on_opts_saved($old, $new) {
   $was = is_array($old) && !empty($old['live']);
   $now = is_array($new) && !empty($new['live']);
   if ($was !== $now || (is_array($old) && is_array($new) && $old != $new)) {
+    if (function_exists('gt_flush_index')) gt_flush_index();
     do_action('litespeed_purge_all');
   }
 }
@@ -99,6 +102,9 @@ function gt_settings_page() {
         <tr><th scope="row">Publicar</th><td>
           <label><input type="checkbox" name="<?php echo esc_attr($f('live')); ?>" value="1" <?php checked($o['live'], 1); ?>> Mostrar el rediseño a todos los visitantes</label>
           <p class="description">Al guardar se vacía la caché de LiteSpeed.</p></td></tr>
+        <tr><th scope="row">Optimizar carga</th><td>
+          <label><input type="checkbox" name="<?php echo esc_attr($f('slim')); ?>" value="1" <?php checked($o['slim'], 1); ?>> No cargar lo que estas páginas no usan (SureCart en toda la tienda; Elementor, fuentes y galería de WooCommerce en portada, listados y fichas)</label>
+          <p class="description">Si algún widget dejara de verse, desmarca esta casilla y avísanos.</p></td></tr>
         <tr><th scope="row">Portada</th><td>
           <label><input type="checkbox" name="<?php echo esc_attr($f('home')); ?>" value="1" <?php checked($o['home'], 1); ?>> Usar la portada del rediseño (si la desmarcas, se muestra la portada de Elementor con la cabecera y el pie nuevos)</label></td></tr>
         <tr><th scope="row"><label for="gt-hero">Producto destacado de la portada</label></th><td>

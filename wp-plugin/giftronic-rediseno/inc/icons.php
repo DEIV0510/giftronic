@@ -79,9 +79,20 @@ function gt_icons() {
   return $i;
 }
 
-/** SVG del ícono. */
+/**
+ * SVG del ícono: una referencia al sprite que se imprime una sola vez al abrir el <body> (gt_icon_sprite).
+ * Relleno, color y trazo vienen del CSS (.gt-i); solo se escribe el grosor cuando no es el normal (1,8).
+ */
 function gt_ic($name, $size = 20, $sw = 1.8, $class = 'gt-i') {
   $i = gt_icons();
-  $d = isset($i[$name]) ? $i[$name] : '';
-  return '<svg class="' . esc_attr($class) . '" width="' . (int) $size . '" height="' . (int) $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' . esc_attr($sw) . '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $d . '</svg>';
+  if (!isset($i[$name])) return '';
+  $style = ((float) $sw !== 1.8) ? ' style="stroke-width:' . esc_attr($sw) . '"' : '';
+  return '<svg class="' . esc_attr($class) . '" width="' . (int) $size . '" height="' . (int) $size . '"' . $style . ' aria-hidden="true"><use href="#gt-i-' . esc_attr($name) . '"/></svg>';
+}
+
+/** Sprite con todos los íconos (se imprime una vez por página). */
+function gt_icon_sprite() {
+  $out = '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs>';
+  foreach (gt_icons() as $k => $d) $out .= '<symbol id="gt-i-' . $k . '" viewBox="0 0 24 24">' . $d . '</symbol>';
+  return $out . '</defs></svg>';
 }

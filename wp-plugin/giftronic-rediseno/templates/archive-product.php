@@ -59,6 +59,7 @@ if ($term && $term->taxonomy === 'product_cat') {
         <?php woocommerce_output_all_notices(); ?>
 
         <?php if (have_posts()) : ?>
+          <h2 class="screen-reader-text">Productos</h2>
           <?php
           woocommerce_product_loop_start();
           while (have_posts()) {

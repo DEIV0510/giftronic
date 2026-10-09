@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Giftronic Rediseño
  * Description:       Rediseño de la tienda: cabecera, portada, categorías con filtros, ficha de producto, carrito y pie. Arranca en vista previa (solo administradores); se publica para todos en Ajustes → Rediseño Giftronic. Al desactivarlo la tienda vuelve a verse como antes.
- * Version:           1.1.2
+ * Version:           1.2.0
  * Author:            Giftronic04
  * Requires at least: 6.0
  * Requires PHP:      7.4
@@ -11,7 +11,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('GT_VER', '1.1.2');
+define('GT_VER', '1.2.0');
 define('GT_DIR', plugin_dir_path(__FILE__));
 define('GT_URL', plugin_dir_url(__FILE__));
 
@@ -23,6 +23,7 @@ require_once GT_DIR . 'inc/chrome.php';
 require_once GT_DIR . 'inc/shop.php';
 require_once GT_DIR . 'inc/product.php';
 require_once GT_DIR . 'inc/home.php';
+require_once GT_DIR . 'inc/perf.php';
 
 /**
  * ¿Se muestra el rediseño en esta petición?
@@ -127,11 +128,11 @@ function gt_price_format($format, $pos) {
 }
 
 function gt_assets() {
-  wp_enqueue_style('gt-font', 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap', array(), null);
   wp_enqueue_style('gt', GT_URL . 'assets/gt.css', array(), GT_VER . '.' . filemtime(GT_DIR . 'assets/gt.css'));
-  wp_enqueue_script('wc-cart-fragments');
+  // Sin wc-cart-fragments: add-to-cart.js ya actualiza el contador y el mini carrito con la respuesta de cada compra,
+  // y así no se hace una petición sin caché (get_refreshed_fragments) en la primera página de cada visita.
   wp_enqueue_script('wc-add-to-cart');
-  wp_enqueue_script('gt', GT_URL . 'assets/gt.js', array('jquery'), GT_VER . '.' . filemtime(GT_DIR . 'assets/gt.js'), true);
+  wp_enqueue_script('gt', GT_URL . 'assets/gt.js', array('jquery'), GT_VER . '.' . filemtime(GT_DIR . 'assets/gt.js'), array('in_footer' => true, 'strategy' => 'defer'));
   wp_localize_script('gt', 'gtData', array(
     'store'    => esc_url_raw(rest_url('wc/store/v1/products')),
     'search'   => esc_url_raw(add_query_arg(array('post_type' => 'product'), home_url('/'))),
@@ -143,7 +144,7 @@ function gt_assets() {
 
 function gt_fragments($f) {
   $n = WC()->cart ? WC()->cart->get_cart_contents_count() : 0;
-  $f['span.gt-cart-count'] = '<span class="gt-count gt-cart-count" data-n="' . (int) $n . '">' . (int) $n . '</span>';
+  $f['span.gt-cart-count'] = '<span class="gt-count gt-cart-count" data-n="' . (int) $n . '" aria-hidden="true">' . (int) $n . '</span>';
   return $f;
 }
 
