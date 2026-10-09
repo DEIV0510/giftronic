@@ -311,6 +311,15 @@ add_action('woocommerce_product_query', 'gt_maybe_apply_filters', 20);
 function gt_maybe_apply_filters($q) {
   if (gt_on()) gt_apply_filters($q);
 }
+/* En los listados, los productos agotados van al final (sin cambiar el orden elegido dentro de cada grupo). */
+add_filter('posts_clauses', 'gt_instock_first', 20, 2);
+function gt_instock_first($c, $q) {
+  if (!$q->is_main_query() || !$q->get('wc_query') || !gt_on()) return $c;
+  global $wpdb;
+  $c['join'] .= " LEFT JOIN {$wpdb->postmeta} gt_ss ON (gt_ss.post_id = {$wpdb->posts}.ID AND gt_ss.meta_key = '_stock_status')";
+  $c['orderby'] = "(CASE WHEN gt_ss.meta_value = 'outofstock' THEN 1 ELSE 0 END) ASC" . (trim($c['orderby']) !== '' ? ', ' . $c['orderby'] : '');
+  return $c;
+}
 add_filter('loop_shop_per_page', 'gt_maybe_per_page', 99);
 function gt_maybe_per_page($n) {
   return gt_on() ? 24 : $n;

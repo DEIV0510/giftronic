@@ -203,10 +203,10 @@ function gt_cat_tree() {
   if ($tree !== null) return $tree;
   $terms = get_terms(array('taxonomy' => 'product_cat', 'hide_empty' => false, 'orderby' => 'name'));
   if (is_wp_error($terms)) return $tree = array();
-  $skip = (int) get_option('default_product_cat');
   $by = array(); $kids = array();
   foreach ($terms as $t) {
-    if ((int) $t->term_id === $skip || $t->slug === 'uncategorized') continue;
+    // «Sin categorizar» no se muestra (ojo: en esta tienda la categoría por defecto es Portátiles, así que no se filtra por ID).
+    if (preg_match('/^(uncategorized|sin-categorizar|sin-categoria)$/', $t->slug)) continue;
     $by[$t->term_id] = $t;
     $kids[$t->parent][] = $t->term_id;
   }

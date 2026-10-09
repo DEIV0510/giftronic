@@ -46,7 +46,8 @@ body h1,body h2,body h3,body h4,body h5,body h6{font-family:var(--gt-font);color
 /* Astra: contenedor a ancho completo en las vistas del rediseño y sin sus restos */
 body.gt-full .site-content>.ast-container{max-width:none;padding:0;display:block;margin:0}
 body.gt-full #primary,body.gt-full #secondary{display:none}
-body.gt .site-content{background:var(--gt-bg)}
+body .site-content,body #page,body .site{background:var(--gt-bg)}
+body{background-color:var(--gt-bg)}
 #ast-scroll-top,.ast-scroll-top-icon,#ast-mobile-popup-wrapper,.ast-mobile-popup-drawer,#ast-desktop-header,#ast-mobile-header,header.site-header:not(.gt-hdr){display:none!important}
 body.gt .ast-woocommerce-container,body.gt #primary{font-family:var(--gt-font)}
 .gt-page{padding-bottom:48px}
@@ -76,7 +77,7 @@ body.gt-preview .gt-topbar::after{content:"Vista previa del rediseño · solo ad
 .gt-link:hover{color:var(--gt-accent);text-decoration:underline;text-underline-offset:3px}
 .gt-icon-btn{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:0;color:inherit;flex:none;position:relative}
 .gt-icon-btn:hover{background:rgba(255,255,255,.08)}
-.gt-input{width:100%;min-height:44px;border:1.5px solid var(--gt-border-strong);border-radius:0;background:#fff;padding:0 12px;font-size:15px;font-weight:500;color:var(--gt-text);box-shadow:none}
+.gt-input{width:100%;min-height:44px;border:1.5px solid var(--gt-border-strong)!important;border-radius:0!important;background:#fff!important;padding:0 12px;font-size:15px;font-weight:500;color:var(--gt-text)!important;box-shadow:none!important}
 .gt-input:focus{outline:0;border-color:var(--gt-ink);box-shadow:0 0 0 3px rgba(210,68,16,.25)}
 .gt-cb{appearance:none;-webkit-appearance:none;width:20px;height:20px;border:1.5px solid #9CA3AF;border-radius:0;margin:0;flex:none;background:#fff;display:inline-grid;place-items:center;cursor:pointer;transition:background-color .15s,border-color .15s}
 .gt-cb:checked{background:var(--gt-ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/13px no-repeat;border-color:var(--gt-ink)}
@@ -126,7 +127,8 @@ body.admin-bar{--gt-hdr-top:32px}
 @media (max-width:600px){body.admin-bar{--gt-hdr-top:0px}}
 .gt-hdr-in{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"menu logo actions" "search search search";align-items:center;column-gap:4px;row-gap:8px;padding-block:6px 10px;transition:padding .2s var(--gt-ease)}
 .gt-hdr-menu{grid-area:menu;color:#fff}
-.gt-logo{grid-area:logo;display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:#fff;min-height:44px;justify-self:start;min-width:0}
+.gt-hdr-in .gt-logo{grid-area:logo}
+.gt-logo{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:#fff;min-height:44px;justify-self:start;min-width:0}
 .gt-logo:hover,.gt-logo:focus{color:#fff}
 .gt-logo-mark{width:32px;height:28px;flex:none}
 .gt-logo-word{font-weight:800;font-size:16px;letter-spacing:.01em;line-height:1;white-space:nowrap;font-family:var(--gt-font)}
@@ -134,7 +136,7 @@ body.admin-bar{--gt-hdr-top:32px}
 .gt-logo-word small{font-size:10.5px;font-weight:700;color:#A3A3AE;margin-left:1px;letter-spacing:.04em}
 .gt-search{grid-area:search;position:relative;display:flex;align-items:center;background:#fff;border-radius:0;height:44px;padding-left:12px;color:var(--gt-text);margin:0}
 .gt-search>.gt-i{color:var(--gt-muted)}
-.gt-search input[type=search]{flex:1;min-width:0;border:0;outline:0;background:transparent;height:100%;padding:0 10px;font-size:16px;font-weight:500;color:var(--gt-text);box-shadow:none;border-radius:0;margin:0}
+.gt-search input[type=search]{flex:1;min-width:0;border:0;outline:0;background:transparent;height:100%;padding:0 10px;font-size:16px;font-weight:500;color:var(--gt-text)!important;-webkit-text-fill-color:var(--gt-text);background:transparent!important;box-shadow:none!important;border-radius:0;margin:0}
 .gt-search input[type=search]::placeholder{color:#737985;opacity:1}
 .gt-search input::-webkit-search-cancel-button{display:none}
 .gt-search:focus-within{box-shadow:0 0 0 3px var(--gt-brand-soft)}
@@ -146,6 +148,7 @@ body.admin-bar{--gt-hdr-top:32px}
 .gt-hdr-act:hover,.gt-hdr-act:focus{background:rgba(255,255,255,.08);color:#fff}
 .gt-hdr-act .t{display:none;text-align:left;line-height:1.15;font-size:14px;font-weight:700}
 .gt-hdr-act .t small{display:block;font-size:11.5px;font-weight:600;color:#A3A3AE;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gt-hdr-act .gt-count+.t{margin-left:8px}
 .gt-count{position:absolute;top:3px;left:24px;min-width:19px;height:19px;padding:0 5px;background:var(--gt-brand);color:#0B0B0F;font-size:11px;font-weight:800;display:grid;place-items:center;line-height:1;transition:transform .2s var(--gt-ease)}
 .gt-count[data-n="0"]{display:none}
 .gt-count.bump{transform:scale(1.3)}
@@ -228,7 +231,7 @@ body.admin-bar{--gt-hdr-top:32px}
 /* =====================================================================
    Paneles (menú y carrito), barra inferior, WhatsApp, avisos
    ===================================================================== */
-.gt-layer{position:fixed;inset:0;z-index:1000;display:flex}
+.gt-layer{position:fixed;inset:var(--gt-hdr-top) 0 0 0;z-index:1000;display:flex}
 .gt-layer.right{justify-content:flex-end}
 .gt-scrim{position:absolute;inset:0;background:rgba(11,11,15,.52);animation:gt-fade .2s ease-out}
 .gt-sheet{position:relative;background:#fff;width:min(420px,92%);height:100%;display:flex;flex-direction:column;animation:gt-slideL .25s var(--gt-ease);box-shadow:var(--gt-sh-3);color:var(--gt-text)}
@@ -258,7 +261,7 @@ body.gt-lock{overflow:hidden}
 .gt-layer .woocommerce-mini-cart-item img{grid-area:img;width:72px!important;height:72px!important;object-fit:contain;border:1px solid var(--gt-border);background:#fff;padding:4px;float:none!important;margin:0!important;position:absolute;left:0;top:14px}
 .gt-layer .woocommerce-mini-cart-item .quantity{grid-area:qty;color:var(--gt-muted-strong);font-weight:600;font-size:13.5px;margin:0}
 .gt-layer .woocommerce-mini-cart-item .quantity .amount{color:var(--gt-text);font-weight:800}
-.gt-layer .woocommerce-mini-cart-item a.remove{position:absolute;right:0;top:12px;width:32px;height:32px;display:grid;place-items:center;font-size:20px;color:var(--gt-muted-strong)!important;background:none!important;border-radius:0;text-decoration:none;line-height:1}
+.gt-layer .woocommerce-mini-cart-item a.remove{position:absolute;right:0;top:12px;width:32px;height:32px;display:grid;place-items:center;font-size:20px;color:var(--gt-muted-strong)!important;background:none!important;border-radius:0;text-decoration:none;line-height:1;border:0!important}
 .gt-layer .woocommerce-mini-cart-item a.remove:hover{color:var(--gt-danger)!important}
 .gt-layer .woocommerce-mini-cart-item .variation{grid-column:2;font-size:12.5px;color:var(--gt-muted-strong);margin:0}
 .gt-layer .woocommerce-mini-cart__total{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:16px 0 10px;margin:auto 0 0;font-size:15px;border:0}
@@ -279,6 +282,7 @@ body.gt:not(.gt-checkout){padding-bottom:calc(56px + env(safe-area-inset-bottom,
 .gt-wa-float:hover,.gt-wa-float:focus{transform:scale(1.06);color:#fff}
 @media (min-width:1024px){.gt-wa-float{bottom:24px;right:24px}}
 body.gt-has-buybar .gt-wa-float{display:none}
+@media (max-width:1023.98px){body.gt-pdp-page .gt-wa-float{display:none}}
 .gt-toast-slot{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:1100;width:max-content;max-width:calc(100% - 32px)}
 @media (min-width:1024px){.gt-toast-slot{bottom:24px}}
 .gt-toast{background:var(--gt-ink);color:#fff;padding:10px 10px 10px 16px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:var(--gt-sh-3);animation:gt-toast .25s var(--gt-ease)}
@@ -289,7 +293,7 @@ body.gt-has-buybar .gt-wa-float{display:none}
 /* =====================================================================
    Pie de página
    ===================================================================== */
-.gt-foot{background:var(--gt-ink);color:#C9C9D2;margin-top:48px;font-size:14px}
+.gt-foot{background:var(--gt-ink);color:#C9C9D2;margin-top:0;font-size:14px}
 .gt-foot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 20px;padding-block:40px 28px}
 .gt-foot-brand{grid-column:1/-1;display:grid;gap:12px;align-content:start}
 .gt-foot-brand p{max-width:40ch;color:#A3A3AE;font-size:14px}

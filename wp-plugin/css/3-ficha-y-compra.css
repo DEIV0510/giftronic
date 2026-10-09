@@ -22,7 +22,7 @@
 .gt-gal-m{position:relative;margin-inline:-16px}
 .gt-gal-m-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;background:#fff;border-block:1px solid var(--gt-border)}
 .gt-gal-m-track::-webkit-scrollbar{display:none}
-.gt-gal-m-track>div{flex:0 0 100%;scroll-snap-align:center;height:230px;display:grid;grid-template-rows:100%;place-items:center}
+.gt-gal-m-track>div{flex:0 0 100%;scroll-snap-align:center;height:210px;display:grid;grid-template-rows:100%;place-items:center}
 .gt-gal-m-track .gt-art{width:auto;height:100%;max-width:100%;object-fit:contain;padding:8px}
 .gt-gal-dots{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;gap:6px;pointer-events:none}
 .gt-gal-dots i{width:6px;height:6px;background:#C7CBD2;transition:width .2s,background-color .2s}
@@ -30,7 +30,7 @@
 .gt-gal-m .gt-gal-kind{top:8px;left:24px}
 @media (min-width:1024px){.gt-gal-d{display:block}.gt-gal-m{display:none}}
 /* Visor ampliado */
-.gt-zoom{position:fixed;inset:0;z-index:1200;background:rgba(11,11,15,.92);display:grid;place-items:center;padding:16px;cursor:zoom-out}
+.gt-zoom{position:fixed;inset:var(--gt-hdr-top) 0 0 0;z-index:1200;background:rgba(11,11,15,.92);display:grid;place-items:center;padding:16px;cursor:zoom-out}
 .gt-zoom img{max-width:100%;max-height:100%;object-fit:contain;background:#fff}
 .gt-zoom button{position:absolute;top:12px;right:12px;width:48px;height:48px;display:grid;place-items:center;background:#fff;color:var(--gt-text);border:0;border-radius:0}
 
@@ -60,13 +60,13 @@
 .gt-cartform form.cart{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:0!important;padding:0;border:0}
 .gt-cartform form.cart::before,.gt-cartform form.cart::after{display:none!important}
 .gt-cartform .quantity{display:inline-flex!important;align-items:center;margin:0!important;float:none!important;border:1.5px solid var(--gt-border-strong);background:#fff;height:52px}
-.gt-cartform .quantity .qty{width:64px!important;height:48px!important;min-height:0;border:0!important;background:transparent!important;text-align:center;font-weight:800;font-size:16px;padding:0!important;box-shadow:none!important;-moz-appearance:textfield}
+.gt-cartform .quantity .qty{width:64px!important;height:48px!important;min-height:0;border:0!important;background:transparent!important;text-align:center;font-weight:800;font-size:16px;padding:0!important;box-shadow:none!important;color:var(--gt-text)!important;-moz-appearance:textfield}
 .gt-cartform .quantity .qty::-webkit-inner-spin-button{opacity:1}
 .gt-cartform .quantity .minus,.gt-cartform .quantity .plus,.gt-cartform .quantity .ast-qty-placement{display:none!important}
 .gt-cartform .single_add_to_cart_button,.gt-cartform button.button.alt{flex:1 1 200px;min-height:52px!important;border-radius:0!important;background:var(--gt-accent)!important;border:0!important;color:#fff!important;font-family:var(--gt-font)!important;font-weight:700!important;font-size:16px!important;padding:0 22px!important;margin:0!important;line-height:1.1!important;text-transform:none!important;letter-spacing:0!important;float:none!important;width:auto!important}
 .gt-cartform .single_add_to_cart_button:hover{background:var(--gt-accent-hover)!important}
 .gt-cartform .single_add_to_cart_button.disabled{opacity:.5}
-.gt-cartform .stock{display:none}
+.gt-cartform .stock,.gt-cartform .ast-stock-detail{display:none!important}
 .gt-cartform table.variations{width:100%;margin:0 0 6px;border:0;border-collapse:collapse}
 .gt-cartform table.variations th,.gt-cartform table.variations td{display:block;padding:0;border:0;background:none;text-align:left}
 .gt-cartform table.variations th label{font-size:14px;font-weight:800;margin:0 0 6px;display:block}
@@ -94,8 +94,8 @@
 /* Barra fija de compra (móvil) */
 .gt-buybar{position:fixed;left:0;right:0;bottom:calc(56px + env(safe-area-inset-bottom,0px));z-index:81;display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(255,255,255,.98);border-top:1px solid var(--gt-border);box-shadow:0 -10px 30px -18px rgba(11,11,15,.3)}
 .gt-bb-p{display:grid;line-height:1.2;margin-right:auto;min-width:0}
-.gt-bb-p .gt-price{font-size:20px;color:var(--gt-accent)}
-.gt-bb-p span:not(.gt-price){font-size:12px;color:var(--gt-muted-strong);font-weight:600}
+.gt-bb-p .gt-price{font-size:20px;font-weight:800;color:var(--gt-accent)}
+.gt-bb-p>span:not(.gt-price){font-size:12px;color:var(--gt-muted-strong);font-weight:600}
 .gt-buybar .gt-btn{min-width:150px}
 @media (min-width:1024px){.gt-buybar{display:none!important}}
 body.gt-has-buybar{padding-bottom:calc(128px + env(safe-area-inset-bottom,0px))}
@@ -212,3 +212,24 @@ body.woocommerce-cart .entry-title,body.woocommerce-checkout .entry-title,body.w
 ul.woocommerce-order-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:16px 0 24px!important;padding:0}
 ul.woocommerce-order-overview li{border:1px solid var(--gt-border)!important;padding:12px!important;margin:0!important;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--gt-muted-strong)}
 ul.woocommerce-order-overview li strong{display:block;font-size:15px;text-transform:none;letter-spacing:0;color:var(--gt-text);margin-top:4px}
+
+/* El modo oscuro de Astra pinta textos claros y campos oscuros en las páginas de WooCommerce: se devuelven a la paleta del rediseño */
+body.woocommerce-cart .site-content,body.woocommerce-checkout .site-content,body.woocommerce-account .site-content,body.woocommerce-order-received .site-content{color:var(--gt-text)}
+body.woocommerce-cart .site-content :is(label,legend,th,td,p,li,span,strong,h1,h2,h3),body.woocommerce-checkout .site-content :is(label,legend,th,td,p,li,span,strong,h1,h2,h3),body.woocommerce-account .site-content :is(label,legend,th,td,p,li,span,strong,h1,h2,h3){color:inherit}
+body.woocommerce-cart .site-content :is(input[type=text],input[type=email],input[type=tel],input[type=number],input[type=password],input[type=search],textarea,select),body.woocommerce-checkout .site-content :is(input[type=text],input[type=email],input[type=tel],input[type=number],input[type=password],input[type=search],textarea,select),body.woocommerce-account .site-content :is(input[type=text],input[type=email],input[type=tel],input[type=number],input[type=password],input[type=search],textarea,select){background:#fff!important;color:var(--gt-text)!important;border:1.5px solid var(--gt-border-strong)!important;border-radius:0!important;min-height:44px;box-shadow:none!important}
+body.woocommerce-cart .site-content a:not(.button):not(.remove),body.woocommerce-checkout .site-content a:not(.button):not(.remove),body.woocommerce-account .site-content a:not(.button):not(.remove){color:var(--gt-text)}
+.cart_totals>h2,.cart-collaterals .cart_totals h2{background:none!important;color:var(--gt-text)!important;padding:0!important;border:0!important;margin:0 0 14px!important}
+.cart-collaterals .cart_totals{border:1px solid var(--gt-border)!important}
+.woocommerce table.shop_table td.product-remove a.remove{border:0!important;width:32px;height:32px;line-height:30px;display:grid;place-items:center;font-size:24px!important;color:var(--gt-muted-strong)!important}
+.woocommerce-cart table.cart td.actions .coupon .input-text{min-width:180px;padding:0 12px!important}
+.woocommerce-shipping-methods label,.woocommerce-shipping-destination,.woocommerce-shipping-calculator a{color:var(--gt-text)!important}
+.woocommerce .wc-proceed-to-checkout{padding-top:12px}
+.woocommerce .wc-proceed-to-checkout a.checkout-button{display:flex;align-items:center;justify-content:center;width:100%;margin:0}
+/* Formularios de WPForms (Contacto) sobre el fondo claro del rediseño */
+.site-content .wpforms-container :is(label,legend,.wpforms-field-label,.wpforms-field-sublabel,.wpforms-field-description){color:var(--gt-text)!important}
+.site-content .wpforms-container :is(input[type=text],input[type=email],input[type=tel],input[type=url],textarea,select){background:#fff!important;color:var(--gt-text)!important;border:1.5px solid var(--gt-border-strong)!important;border-radius:0!important}
+.site-content .wpforms-container button[type=submit]{background:var(--gt-accent)!important;color:#fff!important;border:0!important;border-radius:0!important;min-height:48px;padding:0 22px!important;font-weight:700!important;font-family:var(--gt-font)!important}
+/* Campos dentro de las vistas del rediseño (opiniones, variaciones, cantidad): Astra los fuerza con !important en modo oscuro */
+.gt-page :is(input[type=text],input[type=email],input[type=number],input[type=tel],input[type=url],textarea,select){color:var(--gt-text)!important;background-color:#fff!important}
+
+.woocommerce table.shop_table td.product-remove a.remove .ahfb-svg-iconset,.woocommerce table.shop_table td.product-remove a.remove svg{width:16px;height:16px;border:0;background:none}

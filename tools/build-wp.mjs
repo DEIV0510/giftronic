@@ -23,8 +23,9 @@ function splitTop(sel) {
 function prefixSel(sel) {
   return splitTop(sel).map(s => {
     if (/^(html|:root)\b/.test(s)) return s;
-    if (/^body\b/.test(s)) return s.replace(/^body/, 'body.gt');
-    return '.gt ' + s;
+    // html body.gt suma especificidad suficiente para ganarle al modo oscuro de Astra (.astra-dark-mode-enable .woocommerce-js label)
+    if (/^body\b/.test(s)) return s.replace(/^body/, 'html body.gt');
+    return 'html body.gt ' + s;
   }).join(',');
 }
 // Recorre el CSS respetando llaves: prefija reglas, entra en @media/@supports, deja @keyframes/@font-face intactos.
