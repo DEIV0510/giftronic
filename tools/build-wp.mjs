@@ -66,6 +66,14 @@ mkdirSync(plugin + 'assets', { recursive: true });
 writeFileSync(plugin + 'assets/gt.css', css);
 console.log('gt.css', (css.length / 1024).toFixed(1), 'KB desde', files.join(', '));
 
+// Revisión de sintaxis de PHP (si hay PHP local) para no subir un plugin roto a la tienda en vivo.
+const PHP = process.env.PHP_BIN || "C:/Users/Lenovo/AppData/Local/Microsoft/WinGet/Packages/PHP.PHP.8.2_Microsoft.Winget.Source_8wekyb3d8bbwe/php.exe";
+if (existsSync(PHP)) {
+  const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(d + e.name + "/") : e.name.endsWith(".php") ? [d + e.name] : []);
+  for (const f of walk(plugin)) execFileSync(PHP, ["-l", f], { stdio: "pipe" });
+  console.log("PHP sin errores de sintaxis");
+}
+
 // ZIP con rutas «giftronic-rediseno/…» (tar de Windows crea ZIP con barras normales).
 mkdirSync(root + 'dist', { recursive: true });
 const zip = root + 'dist/giftronic-rediseno.zip';

@@ -57,6 +57,10 @@ $tiles = array_filter(array(
     </ul>
   </div>
 
+  <?php $promos = gt_home_promos(); if ($promos) : ?>
+  <section class="gt-promos" aria-label="Promociones"><?php echo $promos; // phpcs:ignore ?></section>
+  <?php endif; ?>
+
   <?php if ($tiles) : ?>
   <section class="gt-wrap gt-sec" aria-label="Compra por categoría">
     <?php echo gt_sec_head('Compra por categoría', $size ? 'Más de ' . number_format($size, 0, ',', '.') . ' productos en la tienda.' : '', gt_shop_url(), 'Ver toda la tienda'); ?>

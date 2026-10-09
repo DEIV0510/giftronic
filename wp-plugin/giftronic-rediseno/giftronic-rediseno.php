@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Giftronic Rediseño
  * Description:       Rediseño de la tienda: cabecera, portada, categorías con filtros, ficha de producto, carrito y pie. Arranca en vista previa (solo administradores); se publica para todos en Ajustes → Rediseño Giftronic. Al desactivarlo la tienda vuelve a verse como antes.
- * Version:           1.0.4
+ * Version:           1.1.2
  * Author:            Giftronic04
  * Requires at least: 6.0
  * Requires PHP:      7.4
@@ -11,7 +11,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('GT_VER', '1.0.4');
+define('GT_VER', '1.1.2');
 define('GT_DIR', plugin_dir_path(__FILE__));
 define('GT_URL', plugin_dir_url(__FILE__));
 

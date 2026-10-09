@@ -86,6 +86,7 @@ body.gt-preview .gt-topbar::after{content:"Vista previa del rediseño · solo ad
 .gt-badge-off{background:var(--gt-accent);color:#fff}
 .gt-badge-combo{background:var(--gt-ink);color:#fff}
 .gt-badge-gamer{background:#fff;color:var(--gt-text);border:1px solid var(--gt-border-strong)}
+.gt-badge-out{background:#4B5563;color:#fff}
 .gt-badge-last{background:var(--gt-warning-bg);color:var(--gt-warning);border:1px solid #F0D595}
 .gt-chips{display:flex;flex-wrap:wrap;gap:5px}
 .gt-chips li{font-size:11.5px;font-weight:700;color:var(--gt-muted-strong);border:1px solid var(--gt-border);padding:2px 7px;line-height:1.45;white-space:nowrap;margin:0}

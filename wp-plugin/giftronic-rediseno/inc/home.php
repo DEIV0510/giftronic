@@ -13,6 +13,16 @@ function gt_hero_product() {
   return $ps ? $ps[0] : null;
 }
 
+/** Banners de Smart Slider que ya tenía la portada anterior. */
+function gt_home_promos() {
+  if (!shortcode_exists('smartslider3')) return '';
+  $out = '';
+  foreach (array_filter(array_map('absint', explode(',', (string) gt_opt('sliders')))) as $id) {
+    $out .= '<div class="gt-promo">' . do_shortcode('[smartslider3 slider="' . $id . '"]') . '</div>';
+  }
+  return $out;
+}
+
 /** Título con «a cuotas» resaltado. */
 function gt_hero_title() {
   $t = esc_html(gt_opt('hero_title'));

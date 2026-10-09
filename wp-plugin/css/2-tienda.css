@@ -121,19 +121,17 @@
 .gt-card{position:relative;display:flex;flex-direction:column;width:100%;background:var(--gt-surface);border:1px solid var(--gt-border);overflow:hidden;min-width:0;scroll-snap-align:start;transition:border-color .2s}
 .gt-card-media{position:relative;display:block;aspect-ratio:1/1;background:#fff;overflow:hidden}
 .gt-card-media .gt-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:8%;background:#fff;transition:opacity .25s var(--gt-ease)}
-.gt-card-media .gt-art-2{opacity:0}
 @media (hover:hover) and (pointer:fine){
   .gt-card:hover{border-color:var(--gt-text)}
-  .gt-card:hover .has-2 .gt-art-1{opacity:0}
-  .gt-card:hover .has-2 .gt-art-2{opacity:1}
 }
 .gt-card-badges{position:absolute;top:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:5px;z-index:1;pointer-events:none}
 .gt-card-body{display:flex;flex-direction:column;gap:7px;padding:10px 12px 12px;flex:1}
 .gt-card-brand{font-size:11.5px;font-weight:800;color:var(--gt-muted);text-transform:uppercase;letter-spacing:.07em;min-height:1.2em}
-.gt-card-title{font-size:14.5px;font-weight:700;line-height:1.3;letter-spacing:-.01em;margin:0;min-height:2.6em}
-.gt-card-title a{color:var(--gt-text);text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gt-card-title{font-size:14px;font-weight:700;line-height:1.3;letter-spacing:-.01em;margin:0;min-height:3.9em}
+.gt-card-title a{color:var(--gt-text);text-decoration:none;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .gt-card-title a::after{content:"";position:absolute;inset:0;z-index:0}
 .gt-card-title a:hover{color:var(--gt-text)}
+@media (max-width:767.98px){.gt-card-title{min-height:5.2em;font-size:13.5px}.gt-card-title a{-webkit-line-clamp:4}}
 .gt-card .gt-chips li:nth-child(n+4){display:none}
 .gt-card-price{margin-top:auto;padding-top:4px;display:grid;gap:1px}
 .gt-card-price .gt-price{font-size:19px}
@@ -142,12 +140,10 @@
 .gt-card-actions{display:flex;gap:6px;position:relative;z-index:2;margin-top:6px}
 .gt-card-actions .gt-btn{flex:1;padding:0 10px;font-size:14px}
 .gt-card-actions .added_to_cart{display:none!important}
-.gt-card.is-out .gt-art{filter:grayscale(1);opacity:.6}
 .gt-card.is-out .gt-price{color:var(--gt-muted-strong)}
-.gt-out-flag{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.96);border:1px solid var(--gt-border-strong);padding:6px 12px;font-size:13px;font-weight:800;color:var(--gt-text-2);white-space:nowrap;z-index:1}
 @media (min-width:1024px){
   .gt-card-body{padding:12px 16px 16px;gap:8px}
-  .gt-card-title{font-size:15.5px}
+  .gt-card-title{font-size:15px}
   .gt-card-price .gt-price{font-size:22px}
   .gt-fin{font-size:12.5px}
   .gt-card .gt-chips li:nth-child(n+4){display:list-item}
@@ -237,3 +233,7 @@
 .gt-state strong{font-size:18px}
 .gt-state p{color:var(--gt-muted-strong);font-size:15px;max-width:46ch}
 .gt-state-cta{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:6px}
+
+/* Banners de Smart Slider de la portada anterior */
+.gt-promos{display:grid;gap:12px;padding-top:16px}
+.gt-promo{width:100%}

@@ -21,7 +21,7 @@ function gt_pdata($p) {
   }
   return $cache[$id] = array(
     'name'  => $name,
-    'short' => gt_short_name($name, $kind),
+    'short' => $name, // nombre tal cual está en la tienda
     'kind'  => $kind,
     'specs' => $specs,
     'brand' => $brand,
@@ -94,21 +94,17 @@ function gt_img($p, $size = 'woocommerce_thumbnail', $class = 'gt-art', $eager =
 }
 
 /** Tarjeta de producto. */
-function gt_card($p) {
+function gt_card($p, $eager = false) {
   if (!$p) return '';
   $d = gt_pdata($p);
   $pr = gt_prices($p);
   $url = get_permalink($p->get_id());
   $out = !$p->is_in_stock();
-  $gal = $p->get_gallery_image_ids();
-  $second = $gal ? (int) $gal[0] : 0;
   $h = '<article class="gt-card' . ($out ? ' is-out' : '') . '">';
-  $h .= '<a class="gt-card-media' . ($second ? ' has-2' : '') . '" href="' . esc_url($url) . '" tabindex="-1" aria-hidden="true">';
-  $h .= gt_img($p, 'woocommerce_thumbnail', 'gt-art gt-art-1');
-  if ($second) $h .= gt_img($p, 'woocommerce_thumbnail', 'gt-art gt-art-2', false, $second);
-  if ($out) $h .= '<span class="gt-out-flag">Agotado</span>';
+  $h .= '<a class="gt-card-media" href="' . esc_url($url) . '" tabindex="-1" aria-hidden="true">';
+  $h .= gt_img($p, 'woocommerce_thumbnail', 'gt-art', $eager);
   $h .= '</a>';
-  $badges = gt_badges($p, $pr);
+  $badges = ($out ? '<span class="gt-badge gt-badge-out">Agotado</span>' : '') . gt_badges($p, $pr);
   if ($badges) $h .= '<div class="gt-card-badges">' . $badges . '</div>';
   $h .= '<div class="gt-card-body">';
   $h .= '<span class="gt-card-brand">' . esc_html($d['brand'] ? $d['brand'] : $d['cat']) . '</span>';
@@ -156,7 +152,8 @@ function gt_rail($products, $label) {
   if (!$products) return '';
   $h = '<div class="gt-rail" data-rail><button type="button" class="gt-rail-btn prev" data-rail-prev aria-label="Anteriores: ' . esc_attr($label) . '" disabled>' . gt_ic('left', 22) . '</button>';
   $h .= '<div class="gt-rail-track" role="list" aria-label="' . esc_attr($label) . '" tabindex="0">';
-  foreach ($products as $p) $h .= '<div role="listitem">' . gt_card($p) . '</div>';
+  $i = 0;
+  foreach ($products as $p) $h .= '<div role="listitem">' . gt_card($p, ++$i <= 4) . '</div>';
   $h .= '</div><button type="button" class="gt-rail-btn next" data-rail-next aria-label="Siguientes: ' . esc_attr($label) . '">' . gt_ic('right', 22) . '</button></div>';
   return $h;
 }

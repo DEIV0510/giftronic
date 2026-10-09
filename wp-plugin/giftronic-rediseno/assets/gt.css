@@ -56,6 +56,7 @@ html body.gt .gt-badge{display:inline-flex;align-items:center;gap:4px;font-size:
 html body.gt .gt-badge-off{background:var(--gt-accent);color:#fff}
 html body.gt .gt-badge-combo{background:var(--gt-ink);color:#fff}
 html body.gt .gt-badge-gamer{background:#fff;color:var(--gt-text);border:1px solid var(--gt-border-strong)}
+html body.gt .gt-badge-out{background:#4B5563;color:#fff}
 html body.gt .gt-badge-last{background:var(--gt-warning-bg);color:var(--gt-warning);border:1px solid #F0D595}
 html body.gt .gt-chips{display:flex;flex-wrap:wrap;gap:5px}
 html body.gt .gt-chips li{font-size:11.5px;font-weight:700;color:var(--gt-muted-strong);border:1px solid var(--gt-border);padding:2px 7px;line-height:1.45;white-space:nowrap;margin:0}
@@ -369,18 +370,17 @@ html body.gt .gt-rail-btn[disabled]{opacity:0;pointer-events:none}
 }html body.gt .gt-card{position:relative;display:flex;flex-direction:column;width:100%;background:var(--gt-surface);border:1px solid var(--gt-border);overflow:hidden;min-width:0;scroll-snap-align:start;transition:border-color .2s}
 html body.gt .gt-card-media{position:relative;display:block;aspect-ratio:1/1;background:#fff;overflow:hidden}
 html body.gt .gt-card-media .gt-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:8%;background:#fff;transition:opacity .25s var(--gt-ease)}
-html body.gt .gt-card-media .gt-art-2{opacity:0}
 @media (hover:hover) and (pointer:fine){html body.gt .gt-card:hover{border-color:var(--gt-text)}
-html body.gt .gt-card:hover .has-2 .gt-art-1{opacity:0}
-html body.gt .gt-card:hover .has-2 .gt-art-2{opacity:1}
 }html body.gt .gt-card-badges{position:absolute;top:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:5px;z-index:1;pointer-events:none}
 html body.gt .gt-card-body{display:flex;flex-direction:column;gap:7px;padding:10px 12px 12px;flex:1}
 html body.gt .gt-card-brand{font-size:11.5px;font-weight:800;color:var(--gt-muted);text-transform:uppercase;letter-spacing:.07em;min-height:1.2em}
-html body.gt .gt-card-title{font-size:14.5px;font-weight:700;line-height:1.3;letter-spacing:-.01em;margin:0;min-height:2.6em}
-html body.gt .gt-card-title a{color:var(--gt-text);text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html body.gt .gt-card-title{font-size:14px;font-weight:700;line-height:1.3;letter-spacing:-.01em;margin:0;min-height:3.9em}
+html body.gt .gt-card-title a{color:var(--gt-text);text-decoration:none;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 html body.gt .gt-card-title a::after{content:"";position:absolute;inset:0;z-index:0}
 html body.gt .gt-card-title a:hover{color:var(--gt-text)}
-html body.gt .gt-card .gt-chips li:nth-child(n+4){display:none}
+@media (max-width:767.98px){html body.gt .gt-card-title{min-height:5.2em;font-size:13.5px}
+html body.gt .gt-card-title a{-webkit-line-clamp:4}
+}html body.gt .gt-card .gt-chips li:nth-child(n+4){display:none}
 html body.gt .gt-card-price{margin-top:auto;padding-top:4px;display:grid;gap:1px}
 html body.gt .gt-card-price .gt-price{font-size:19px}
 html body.gt .gt-fin{font-size:12px;color:var(--gt-muted-strong);line-height:1.35}
@@ -388,11 +388,9 @@ html body.gt .gt-fin b{color:var(--gt-text);font-weight:800}
 html body.gt .gt-card-actions{display:flex;gap:6px;position:relative;z-index:2;margin-top:6px}
 html body.gt .gt-card-actions .gt-btn{flex:1;padding:0 10px;font-size:14px}
 html body.gt .gt-card-actions .added_to_cart{display:none!important}
-html body.gt .gt-card.is-out .gt-art{filter:grayscale(1);opacity:.6}
 html body.gt .gt-card.is-out .gt-price{color:var(--gt-muted-strong)}
-html body.gt .gt-out-flag{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.96);border:1px solid var(--gt-border-strong);padding:6px 12px;font-size:13px;font-weight:800;color:var(--gt-text-2);white-space:nowrap;z-index:1}
 @media (min-width:1024px){html body.gt .gt-card-body{padding:12px 16px 16px;gap:8px}
-html body.gt .gt-card-title{font-size:15.5px}
+html body.gt .gt-card-title{font-size:15px}
 html body.gt .gt-card-price .gt-price{font-size:22px}
 html body.gt .gt-fin{font-size:12.5px}
 html body.gt .gt-card .gt-chips li:nth-child(n+4){display:list-item}
@@ -473,6 +471,8 @@ html body.gt .gt-state .ic{width:56px;height:56px;background:var(--gt-bg);displa
 html body.gt .gt-state strong{font-size:18px}
 html body.gt .gt-state p{color:var(--gt-muted-strong);font-size:15px;max-width:46ch}
 html body.gt .gt-state-cta{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:6px}
+html body.gt .gt-promos{display:grid;gap:12px;padding-top:16px}
+html body.gt .gt-promo{width:100%}
 html body.gt .gt-pdp-top{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);padding-top:4px}
 @media (min-width:1024px){html body.gt .gt-pdp-top{grid-template-columns:minmax(0,55fr) minmax(0,45fr);column-gap:48px;align-items:start;padding-top:20px}
 html body.gt .gt-gal{position:sticky;top:calc(var(--gt-hdr-top) + 140px)}
@@ -510,7 +510,7 @@ html body.gt .gt-buy .gt-crumbs ol{flex-wrap:nowrap;overflow-x:auto;white-space:
 html body.gt .gt-buy .gt-crumbs ol::-webkit-scrollbar{display:none}
 @media (max-width:1023.98px){html body.gt .gt-buy .gt-crumbs{order:-2;display:none}
 }html body.gt .gt-pdp-brand{font-size:12.5px;font-weight:800;color:var(--gt-muted);letter-spacing:.08em;text-transform:uppercase}
-html body.gt .gt-pdp-name{font-size:clamp(22px,3vw,34px);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:-4px 0 0;overflow-wrap:anywhere}
+html body.gt .gt-pdp-name{font-size:clamp(20px,2.3vw,28px);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:-4px 0 0;overflow-wrap:anywhere}
 html body.gt .gt-pdp-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:13px;color:var(--gt-muted-strong);font-weight:600}
 html body.gt .gt-pdp-meta:empty{display:none}
 html body.gt .gt-sku{font-family:var(--gt-mono);font-size:12px}
@@ -689,3 +689,8 @@ html body.gt .site-content .wpforms-container :is(input[type=text],input[type=em
 html body.gt .site-content .wpforms-container button[type=submit]{background:var(--gt-accent)!important;color:#fff!important;border:0!important;border-radius:0!important;min-height:48px;padding:0 22px!important;font-weight:700!important;font-family:var(--gt-font)!important}
 html body.gt .gt-page :is(input[type=text],input[type=email],input[type=number],input[type=tel],input[type=url],textarea,select){color:var(--gt-text)!important;background-color:#fff!important}
 html body.gt .woocommerce table.shop_table td.product-remove a.remove .ahfb-svg-iconset,html body.gt .woocommerce table.shop_table td.product-remove a.remove svg{width:16px;height:16px;border:0;background:none}
+html body.gt .select2-container--default .select2-selection--single,html body.gt .select2-container--default .select2-selection--single .select2-selection__rendered{background:#fff!important;color:var(--gt-text)!important}
+html body.gt .select2-dropdown,html body.gt .select2-search__field{background:#fff!important;color:var(--gt-text)!important}
+html body.gt .select2-results__option{color:var(--gt-text)}
+html body.gt #order_review_heading{border:0!important;background:none!important;padding:0!important;margin:0 0 12px!important}
+html body.gt #order_review{border:1px solid var(--gt-border)!important;background:#fff!important;padding:18px!important}

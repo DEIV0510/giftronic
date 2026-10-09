@@ -195,7 +195,13 @@
       prev.disabled = track.scrollLeft < 8;
       next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 8;
     };
-    var go = function (dir) { track.scrollBy({ left: dir * track.clientWidth * 0.9, behavior: 'smooth' }); };
+    // Las fotos de las tarjetas que quedan fuera de la fila se piden apenas el carrusel entra en uso.
+    var loadAll = function () { $$('img[loading="lazy"]', track).forEach(function (i) { i.loading = 'eager'; }); };
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { loadAll(); io.disconnect(); } }, { rootMargin: '300px 0px' });
+      io.observe(track);
+    } else loadAll();
+    var go = function (dir) { loadAll(); track.scrollBy({ left: dir * track.clientWidth * 0.9, behavior: 'smooth' }); };
     prev.addEventListener('click', function () { go(-1); });
     next.addEventListener('click', function () { go(1); });
     track.addEventListener('scroll', upd, { passive: true });
