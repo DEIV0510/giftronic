@@ -60,9 +60,7 @@ while (have_posts()) :
                 <span class="gt-price gt-price-ask">Consultar precio</span>
               <?php endif; ?>
             </div>
-            <?php if ($credit && !$out && $pr['now'] > 0) : ?>
-              <div class="gt-p-fin"><?php echo gt_ic('card', 18); ?><span>Paga a cuotas con <b><?php echo esc_html(gt_join($credit)); ?></b>. <a href="#gt-financia">Ver opciones</a></span></div>
-            <?php endif; ?>
+            <?php if (!$out && $pr['now'] > 0) echo gt_fin_pbox_line($pr['now']); // phpcs:ignore ?>
           </div>
 
           <div class="gt-stock-row"><?php echo gt_stock_html($p, true); ?></div>
@@ -82,6 +80,8 @@ while (have_posts()) :
           </ul>
         </div>
       </div>
+
+      <?php if (!$out && $pr['now'] > 0) echo gt_fin_calc_html($p, $pr['now']); // phpcs:ignore ?>
 
       <?php if (count($hl) >= 3) : ?>
         <section class="gt-psec" aria-labelledby="gt-hl-t">

@@ -380,6 +380,82 @@
     new MutationObserver(fixAlt).observe(document.body, { childList: true, subtree: true });
   }
 
+  /* ---------- Precio según el medio de pago y calculadora de cuotas ---------- */
+  // Cuota fija (sistema francés) con la tasa mensual equivalente a la efectiva anual; igual que gt_cuota() en PHP.
+  var finCuota = function (P, n, ea) {
+    n = Math.max(1, n);
+    if (n === 1 || ea <= 0) return P / n;
+    var i = Math.pow(1 + ea / 100, 1 / 12) - 1;
+    return P * i / (1 - Math.pow(1 + i, -n));
+  };
+  var r100 = function (x) { return Math.ceil(x / 100) * 100; };
+  var finShow = function (P, n, ea) { return n <= 1 ? Math.round(P) : r100(finCuota(P, n, ea)); };
+  var cop = function (x) { return '$ ' + Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
+  var fin = $('[data-fin]');
+  var finState = { price: 0, ea: 0 };
+  function finUpdate() {
+    if (!fin) return;
+    var tab = $('[data-fin-tab][aria-selected="true"]', fin);
+    if (!tab) return;
+    var panel = document.getElementById(tab.getAttribute('aria-controls'));
+    var radio = panel && $('[data-fin-n]:checked', panel);
+    var n = radio ? +radio.value : 1;
+    var c = finShow(finState.price, n, finState.ea);
+    var set = function (sel, v) { var el = $(sel, fin); if (el) el.textContent = v; };
+    set('[data-fin-name]', tab.firstChild ? tab.firstChild.textContent.trim() : '');
+    set('[data-fin-ncount]', n);
+    set('[data-fin-word]', n === 1 ? 'cuota' : 'cuotas');
+    set('[data-fin-per]', n === 1 ? 'un solo pago' : '/mes');
+    set('[data-fin-cuota]', cop(c));
+    set('[data-fin-total]', cop(c * n));
+    set('[data-fin-cuota0]', cop(finShow(finState.price, n, 0)));
+    // Con un solo pago no hay intereses que calcular: sobran el total con tasa y la línea «sin intereses».
+    $$('.gt-calc-out .t, .gt-calc-out .z', fin).forEach(function (el) { el.hidden = n === 1; });
+  }
+  // Valores fuera de la calculadora (recuadro de precio y lista por medio de pago): se recalculan si cambia el precio.
+  function finRefreshLists() {
+    $$('[data-pm-price]').forEach(function (el) { el.textContent = cop(finState.price); });
+    $$('[data-pm-n]').forEach(function (el) {
+      var n = +el.getAttribute('data-pm-n');
+      el.textContent = n + ' × aprox. ' + cop(finShow(finState.price, n, finState.ea));
+    });
+  }
+  if (fin) {
+    finState.price = +fin.getAttribute('data-price') || 0;
+    finState.ea = +fin.getAttribute('data-ea') || 0;
+    var tabs = $$('[data-fin-tab]', fin);
+    var selectTab = function (t, focus) {
+      tabs.forEach(function (x) {
+        var on = x === t;
+        x.setAttribute('aria-selected', on ? 'true' : 'false');
+        x.tabIndex = on ? 0 : -1;
+        var p = document.getElementById(x.getAttribute('aria-controls'));
+        if (p) p.hidden = !on;
+      });
+      if (focus) t.focus();
+      finUpdate();
+    };
+    fin.addEventListener('click', function (e) { var t = e.target.closest('[data-fin-tab]'); if (t) selectTab(t); });
+    fin.addEventListener('change', function (e) { if (e.target.matches('[data-fin-n]')) finUpdate(); });
+    fin.addEventListener('keydown', function (e) {
+      var t = e.target.closest('[data-fin-tab]');
+      if (!t || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft')) return;
+      e.preventDefault();
+      var i = tabs.indexOf(t) + (e.key === 'ArrowRight' ? 1 : -1);
+      selectTab(tabs[(i + tabs.length) % tabs.length], true);
+    });
+    // Productos con variantes: al elegir una versión se recalcula con su precio.
+    if (window.jQuery) {
+      window.jQuery('.variations_form').on('found_variation', function (e, v) {
+        if (v && v.display_price) { finState.price = +v.display_price; finUpdate(); finRefreshLists(); }
+      });
+    }
+  }
+  // El aviso del plugin de SU+ Pay sale con «3 cuotas de $ 0/mes» (lee mal el precio): se oculta solo en ese caso.
+  $$('.gt-pmeta main').forEach(function (m) {
+    if (/cuotas de\s*\$\s*0\s*\/\s*mes/i.test(m.textContent.replace(/ /g, ' '))) m.hidden = true;
+  });
+
   /* ---------- Carrito: abrir el panel al agregar y animar el contador ---------- */
   function bump() {
     $$('.gt-cart-count').forEach(function (c) { c.classList.add('bump'); setTimeout(function () { c.classList.remove('bump'); }, 250); });

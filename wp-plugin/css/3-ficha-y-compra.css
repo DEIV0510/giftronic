@@ -248,3 +248,44 @@ body.woocommerce-cart .site-content a:not(.button):not(.remove),body.woocommerce
 .gt-reviews :is(label,#reply-title,.comment-notes,.comment-form-cookies-consent){color:var(--gt-text)!important}
 .gt-reviews .woocommerce-review__published-date,.gt-reviews .woocommerce-review__dash{color:var(--gt-muted-strong)!important}
 .gt-reviews .star-rating,.gt-reviews .star-rating span,.gt-reviews p.stars a{color:#B45309}
+
+/* =====================================================================
+   Precio según el medio de pago + calculadora de cuotas
+   ===================================================================== */
+.gt-fin-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:1024px){.gt-fin-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:24px;align-items:start}}
+.gt-pm{background:#fff;border:1px solid var(--gt-border);padding:18px}
+.gt-pm-h{font-size:15px;font-weight:800;margin:0 0 6px}
+.gt-pm-list{display:grid}
+.gt-pm-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;align-items:center;padding:12px 0;border-top:1px solid var(--gt-border);margin:0}
+.gt-pm-list li:first-child{border-top:0}
+.gt-pm-list .m b{display:block;font-size:15px}
+.gt-pm-list .m small,.gt-pm-list .v small{display:block;font-size:12.5px;color:var(--gt-muted-strong);font-weight:600}
+.gt-pm-list .v{text-align:right;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gt-pm-note{font-size:13px;color:var(--gt-muted-strong);margin-top:10px;line-height:1.45}
+.gt-calc{background:#fff;border:1px solid var(--gt-border);padding:18px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:768px){.gt-calc{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);padding:24px;gap:24px;align-items:start}}
+.gt-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.gt-tab{display:grid!important;width:100%;gap:1px;align-content:start;text-align:left;min-height:52px;padding:6px 14px!important;border:1.5px solid var(--gt-border-strong)!important;background:#fff!important;font-weight:800;font-size:14.5px;color:var(--gt-text)!important}
+.gt-tab small{font-size:12px;font-weight:600;color:var(--gt-muted-strong)}
+.gt-tab[aria-selected="true"]{border-color:var(--gt-ink)!important;background:var(--gt-ink)!important;color:#fff!important}
+.gt-tab[aria-selected="true"] small{color:#C9C9D2}
+.gt-step{font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gt-muted-strong);margin:14px 0 8px;padding:0}
+.gt-n-opts{display:flex;flex-wrap:wrap;gap:8px;border:0;margin:0;padding:0;min-width:0}
+.gt-n-opt{position:relative;margin:0}
+.gt-n-opt input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.gt-n-opt>span{display:grid;place-items:center;min-height:44px;min-width:56px;padding:0 12px;border:1.5px solid var(--gt-border-strong);background:#fff;font-weight:800;font-size:15px;color:var(--gt-text)!important;cursor:pointer}
+.gt-n-opt input:checked+span{background:var(--gt-ink);color:#fff!important}
+.gt-n-opt input:checked+span{border-color:var(--gt-ink);box-shadow:0 0 0 1px var(--gt-ink)}
+.gt-n-opt input:focus-visible+span{outline:3px solid var(--gt-accent);outline-offset:2px}
+.gt-calc-out{display:grid;gap:4px;background:var(--gt-ink);color:#fff;padding:18px 20px}
+.gt-calc-out .l{font-size:13.5px;color:#BDBDC7;font-weight:600}
+.gt-calc-out .l b{color:#fff}
+.gt-calc-out .v{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:8px;font-size:36px;font-weight:800;letter-spacing:-.035em;line-height:1.1;font-variant-numeric:tabular-nums;color:#fff}
+.gt-calc-out .v small{font-size:16px;font-weight:700;color:#D7D7DF;letter-spacing:0;white-space:nowrap}
+.gt-calc-out .t,.gt-calc-out .z{font-size:13.5px;color:#BDBDC7}
+.gt-calc-out .t b,.gt-calc-out .z b{color:#fff}
+.gt-calc-out .z{padding-top:8px;margin-top:4px;border-top:1px solid rgba(255,255,255,.14)}
+.gt-calc-note{display:flex;gap:8px;font-size:13px;color:var(--gt-muted-strong);line-height:1.45;margin-top:10px}
+.gt-calc-note .gt-i{flex:none;margin-top:1px}
+.gt-calc-note a{color:var(--gt-text);font-weight:700;text-decoration:underline;text-underline-offset:3px}

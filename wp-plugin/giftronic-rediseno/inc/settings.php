@@ -13,6 +13,13 @@ function gt_defaults() {
     'facebook'   => 'https://www.facebook.com/102269164857514',
     'hero_id'    => 11208,
     'logo_id'    => 0,
+    // Financiación: tasa máxima legal (usura, crédito de consumo) del mes y plazos de cada forma de pago a cuotas
+    'fin_rate'   => 28.59,
+    'fin_month'  => '2026-10',
+    'fin_addi'   => '6,12,18,24',
+    'fin_siste'  => '2,3,4,6',
+    'fin_sumas'  => '3,6,12,24,36',
+    'fin_tc'     => '1,3,6,12,24,36',
     'sliders'    => '7,2',
     'hero_title' => 'Tecnología a cuotas y con envío a toda Colombia',
     'hero_sub'   => 'Portátiles, televisores, impresoras y gaming de Samsung, Lenovo, HP, Acer y más marcas. Paga con PSE, tarjeta o a cuotas con Addi, Sistecrédito o SU+ Pay.',
@@ -54,11 +61,24 @@ function gt_sanitize_opts($in) {
     'facebook'   => esc_url_raw(isset($in['facebook']) ? $in['facebook'] : ''),
     'hero_id'    => absint(isset($in['hero_id']) ? $in['hero_id'] : 0),
     'logo_id'    => absint(isset($in['logo_id']) ? $in['logo_id'] : 0),
+    'fin_rate'   => min(99, max(0.01, (float) str_replace(',', '.', isset($in['fin_rate']) ? (string) $in['fin_rate'] : (string) $d['fin_rate']))),
+    'fin_month'  => (isset($in['fin_month']) && preg_match('/^[0-9]{4}-[0-9]{2}$/', (string) $in['fin_month'])) ? (string) $in['fin_month'] : $d['fin_month'],
+    'fin_addi'   => gt_sanitize_plazos(isset($in['fin_addi']) ? $in['fin_addi'] : $d['fin_addi']),
+    'fin_siste'  => gt_sanitize_plazos(isset($in['fin_siste']) ? $in['fin_siste'] : $d['fin_siste']),
+    'fin_sumas'  => gt_sanitize_plazos(isset($in['fin_sumas']) ? $in['fin_sumas'] : $d['fin_sumas']),
+    'fin_tc'     => gt_sanitize_plazos(isset($in['fin_tc']) ? $in['fin_tc'] : $d['fin_tc']),
     'sliders'    => implode(',', array_filter(array_map('absint', explode(',', isset($in['sliders']) ? (string) $in['sliders'] : '')))),
     'hero_title' => sanitize_text_field(isset($in['hero_title']) ? $in['hero_title'] : $d['hero_title']),
     'hero_sub'   => sanitize_text_field(isset($in['hero_sub']) ? $in['hero_sub'] : $d['hero_sub']),
     'topbar'     => sanitize_textarea_field(isset($in['topbar']) ? $in['topbar'] : $d['topbar']),
   );
+}
+
+function gt_sanitize_plazos($csv) {
+  $out = array();
+  foreach (explode(',', (string) $csv) as $n) { $n = (int) trim($n); if ($n >= 1 && $n <= 72) $out[$n] = $n; }
+  ksort($out);
+  return implode(',', $out);
 }
 
 /** Al publicar o volver a vista previa se vacía la caché de LiteSpeed para que todos vean el cambio. */
@@ -70,6 +90,13 @@ function gt_on_opts_saved($old, $new) {
     if (function_exists('gt_flush_index')) gt_flush_index();
     do_action('litespeed_purge_all');
   }
+}
+
+add_action('admin_notices', 'gt_fin_rate_notice');
+function gt_fin_rate_notice() {
+  if (!current_user_can('manage_options') || !gt_opt('live')) return;
+  if ((string) gt_opt('fin_month') === wp_date('Y-m')) return;
+  echo '<div class="notice notice-warning"><p><strong>Rediseño Giftronic:</strong> actualiza la tasa de usura de este mes para las cuotas aproximadas de las fichas (<a href="' . esc_url(admin_url('options-general.php?page=gt-rediseno')) . '">Ajustes → Rediseño Giftronic</a>). La publica la <a href="https://www.superfinanciera.gov.co/" target="_blank" rel="noopener">Superintendencia Financiera</a>.</p></div>';
 }
 
 add_action('admin_menu', 'gt_settings_menu');
@@ -113,6 +140,15 @@ function gt_settings_page() {
           <input id="gt-hero" type="number" min="0" name="<?php echo esc_attr($f('hero_id')); ?>" value="<?php echo esc_attr($o['hero_id']); ?>" class="small-text">
           <?php $hp = ($o['hero_id'] && function_exists('wc_get_product')) ? wc_get_product($o['hero_id']) : null; echo $hp ? ' <span>' . esc_html($hp->get_name()) . '</span>' : ' <span>Sin producto: se elige el más vendido en oferta.</span>'; ?>
           <p class="description">ID del producto (aparece al pasar el mouse en Productos → Todos los productos).</p></td></tr>
+        <tr><th scope="row"><label for="gt-fr">Tasa para las cuotas aproximadas</label></th><td>
+          <input id="gt-fr" type="text" inputmode="decimal" class="small-text" name="<?php echo esc_attr($f('fin_rate')); ?>" value="<?php echo esc_attr(str_replace('.', ',', (string) $o['fin_rate'])); ?>"> % E.A. — mes <input type="month" name="<?php echo esc_attr($f('fin_month')); ?>" value="<?php echo esc_attr($o['fin_month']); ?>">
+          <p class="description">Tasa de usura (crédito de consumo) que certifica la Superintendencia Financiera cada mes; es el tope legal que pueden cobrar Addi, Sistecrédito, SU+ Pay y los bancos. Actualízala al comenzar cada mes. Octubre de 2026: 28,59 %.</p></td></tr>
+        <tr><th scope="row">Plazos a cuotas</th><td>
+          <p><label>Addi <input type="text" class="regular-text" name="<?php echo esc_attr($f('fin_addi')); ?>" value="<?php echo esc_attr($o['fin_addi']); ?>"></label></p>
+          <p><label>Sistecrédito <input type="text" class="regular-text" name="<?php echo esc_attr($f('fin_siste')); ?>" value="<?php echo esc_attr($o['fin_siste']); ?>"></label></p>
+          <p><label>SU+ Pay <input type="text" class="regular-text" name="<?php echo esc_attr($f('fin_sumas')); ?>" value="<?php echo esc_attr($o['fin_sumas']); ?>"></label></p>
+          <p><label>Tarjeta de crédito <input type="text" class="regular-text" name="<?php echo esc_attr($f('fin_tc')); ?>" value="<?php echo esc_attr($o['fin_tc']); ?>"></label></p>
+          <p class="description">Números de cuotas separados por coma. Solo se muestran las formas de pago activas en WooCommerce. Vacío = no mostrar esa opción.</p></td></tr>
         <tr><th scope="row"><label for="gt-lg">Logo (ID de imagen)</label></th><td>
           <input id="gt-lg" type="number" min="0" class="small-text" name="<?php echo esc_attr($f('logo_id')); ?>" value="<?php echo esc_attr($o['logo_id']); ?>">
           <p class="description">0 = el logo oscuro de la cabecera anterior (MOVIL-2). Para cambiarlo, escribe el ID de otra imagen de Medios con fondo negro.</p></td></tr>

@@ -133,7 +133,7 @@ function gt_card($p, $eager = false) {
   if ($pr['was']) $h .= '<span class="gt-price-was"><s>' . gt_money($pr['was']) . '</s></span>';
   if ($pr['now'] > 0) $h .= '<span class="gt-price">' . ($pr['from'] ? '<small>Desde</small> ' : '') . gt_money($pr['now']) . '</span>';
   else $h .= '<span class="gt-price gt-price-ask">Consultar precio</span>';
-  if (!$out && $pr['now'] >= 300000) $h .= '<span class="gt-fin">Paga a cuotas con <b>Addi</b> o <b>Sistecrédito</b></span>';
+  if (!$out) $h .= gt_fin_card_line($pr['now']);
   $h .= '</div>';
   $h .= '<div class="gt-card-actions">' . gt_card_button($p, $d, $out) . '</div>';
   $h .= '</div></article>';
