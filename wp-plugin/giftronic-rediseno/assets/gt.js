@@ -392,7 +392,27 @@
   var finShow = function (P, n, ea) { return n <= 1 ? Math.round(P) : r100(finCuota(P, n, ea)); };
   var cop = function (x) { return '$ ' + Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
   var fin = $('[data-fin]');
-  var finState = { price: 0, ea: 0 };
+  var finState = { price: 0, ea: 0, onSale: false, pm: null, from: true };
+  // Descuento del grupo de medios de pago (Transferencia, Tarjeta o PSE…): con enteros, igual que gt_pm_cut() en PHP.
+  var pmBp = function (slot) {
+    if (!slot || !finState.pm || (finState.pm.skipSale && finState.onSale)) return 0;
+    for (var i = 0; i < finState.pm.g.length; i++) if (finState.pm.g[i].s === slot) return +finState.pm.g[i].bp || 0;
+    return 0;
+  };
+  var pmPrice = function (slot) {
+    var p = Math.round(finState.price), bp = pmBp(slot);
+    return p - (bp > 0 && p > 0 ? Math.floor((p * bp + 5000) / 10000) : 0);
+  };
+  // El grupo que más ahorra con el precio actual (null si ninguno).
+  var pmBest = function () {
+    var best = null;
+    if (!finState.pm) return best;
+    finState.pm.g.forEach(function (g) {
+      var save = Math.round(finState.price) - pmPrice(g.s);
+      if (save > 0 && (!best || save > best.save)) best = { name: g.name, save: save };
+    });
+    return best;
+  };
   function finUpdate() {
     if (!fin) return;
     var tab = $('[data-fin-tab][aria-selected="true"]', fin);
@@ -400,29 +420,63 @@
     var panel = document.getElementById(tab.getAttribute('aria-controls'));
     var radio = panel && $('[data-fin-n]:checked', panel);
     var n = radio ? +radio.value : 1;
-    var c = finShow(finState.price, n, finState.ea);
-    var set = function (sel, v) { var el = $(sel, fin); if (el) el.textContent = v; };
-    set('[data-fin-name]', tab.firstChild ? tab.firstChild.textContent.trim() : '');
+    var base = pmPrice(tab.getAttribute('data-fin-slot'));
+    var c = finShow(base, n, finState.ea);
+    var name = tab.firstChild ? tab.firstChild.textContent.trim() : '';
+    var set = function (sel, v) { $$(sel, fin).forEach(function (el) { el.textContent = v; }); };
+    set('[data-fin-name]', name);
+    set('[data-fin-bname]', name);
+    set('[data-fin-base]', cop(base));
     set('[data-fin-ncount]', n);
     set('[data-fin-word]', n === 1 ? 'cuota' : 'cuotas');
     set('[data-fin-per]', n === 1 ? 'un solo pago' : '/mes');
     set('[data-fin-cuota]', cop(c));
     set('[data-fin-total]', cop(c * n));
-    set('[data-fin-cuota0]', cop(finShow(finState.price, n, 0)));
+    set('[data-fin-cuota0]', cop(finShow(base, n, 0)));
     // Con un solo pago no hay intereses que calcular: sobran el total con tasa y la línea «sin intereses».
     $$('.gt-calc-out .t, .gt-calc-out .z', fin).forEach(function (el) { el.hidden = n === 1; });
   }
-  // Valores fuera de la calculadora (recuadro de precio y lista por medio de pago): se recalculan si cambia el precio.
+  // Valores fuera de la calculadora (recuadro de precio, lista por medio de pago y textos): se recalculan si cambia el precio.
   function finRefreshLists() {
-    $$('[data-pm-price]').forEach(function (el) { el.textContent = cop(finState.price); });
+    var price = Math.round(finState.price);
+    var slotOf = function (el) { return el.getAttribute('data-pm-slot'); };
+    $$('[data-pm-price]').forEach(function (el) { el.textContent = cop(pmPrice(slotOf(el))); });
     $$('[data-pm-n]').forEach(function (el) {
       var n = +el.getAttribute('data-pm-n');
-      el.textContent = n + ' × aprox. ' + cop(finShow(finState.price, n, finState.ea));
+      el.textContent = n + ' × aprox. ' + cop(finShow(pmPrice(slotOf(el)), n, finState.ea));
     });
+    $$('[data-pm-save]').forEach(function (el) {
+      var save = price - pmPrice(slotOf(el));
+      el.hidden = save <= 0;
+      var was = $('[data-pm-was]', el), v = $('[data-pm-save-v]', el);
+      if (was) was.textContent = cop(price);
+      if (v) v.textContent = cop(save);
+    });
+    $$('[data-pm-once]').forEach(function (el) { el.hidden = price - pmPrice(slotOf(el)) > 0; });
+    if (!finState.pm) return;
+    // Textos que cambian según haya o no descuento con esta variación, y el mejor precio del recuadro.
+    var best = pmBest();
+    $$('[data-pm-if]').forEach(function (el) { el.hidden = (el.getAttribute('data-pm-if') === 'best') !== !!best; });
+    $$('[data-pm-lead-save]').forEach(function (el) { el.textContent = best ? cop(best.save) : ''; });
+    var box = $('[data-pm-best]');
+    if (box) {
+      box.hidden = !best;
+      var set = function (sel, v) { var el = $(sel, box); if (el) el.textContent = v; };
+      if (best) {
+        set('[data-pm-best-price]', cop(price - best.save));
+        set('[data-pm-best-name]', best.name);
+        set('[data-pm-best-save]', cop(best.save));
+      }
+      var from = $('[data-pm-from]', box);
+      if (from) from.hidden = !finState.from;
+    }
   }
   if (fin) {
     finState.price = +fin.getAttribute('data-price') || 0;
     finState.ea = +fin.getAttribute('data-ea') || 0;
+    finState.onSale = fin.getAttribute('data-on-sale') === '1';
+    try { finState.pm = fin.getAttribute('data-pm') ? JSON.parse(fin.getAttribute('data-pm')) : null; } catch (e) { finState.pm = null; }
+    var finInit = { price: finState.price, onSale: finState.onSale };
     var tabs = $$('[data-fin-tab]', fin);
     var selectTab = function (t, focus) {
       tabs.forEach(function (x) {
@@ -444,10 +498,23 @@
       var i = tabs.indexOf(t) + (e.key === 'ArrowRight' ? 1 : -1);
       selectTab(tabs[(i + tabs.length) % tabs.length], true);
     });
-    // Productos con variantes: al elegir una versión se recalcula con su precio.
+    // Productos con variantes: al elegir una versión se recalcula con su precio (y si está en oferta);
+    // al limpiar la elección se vuelve al precio «Desde».
     if (window.jQuery) {
       window.jQuery('.variations_form').on('found_variation', function (e, v) {
-        if (v && v.display_price) { finState.price = +v.display_price; finUpdate(); finRefreshLists(); }
+        if (v && v.display_price) {
+          finState.price = +v.display_price;
+          finState.onSale = +v.display_regular_price > +v.display_price;
+          finState.from = false;
+          finUpdate();
+          finRefreshLists();
+        }
+      }).on('reset_data', function () {
+        finState.price = finInit.price;
+        finState.onSale = finInit.onSale;
+        finState.from = true;
+        finUpdate();
+        finRefreshLists();
       });
     }
   }

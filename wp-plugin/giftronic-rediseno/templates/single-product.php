@@ -60,7 +60,7 @@ while (have_posts()) :
                 <span class="gt-price gt-price-ask">Consultar precio</span>
               <?php endif; ?>
             </div>
-            <?php if (!$out && $pr['now'] > 0) echo gt_fin_pbox_line($pr['now']); // phpcs:ignore ?>
+            <?php if (!$out && $pr['now'] > 0) echo gt_pm_pbox_line($p, $pr['now'], $pr['from']) . gt_fin_pbox_line($pr['now'], $p); // phpcs:ignore ?>
           </div>
 
           <div class="gt-stock-row"><?php echo gt_stock_html($p, true); ?></div>

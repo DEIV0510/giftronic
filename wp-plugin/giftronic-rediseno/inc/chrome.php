@@ -178,28 +178,53 @@ function gt_build_menu() {
   return $h;
 }
 
-/** Medios de pago activos en la tienda (con nombres cortos). */
-function gt_pay_methods() {
-  static $memo = null;
-  if ($memo !== null) return $memo;
-  $cached = get_transient('gt_pay_' . GT_VER);
-  if (is_array($cached)) return $memo = $cached;
-  $labels = array(
+/** Nombres cortos de las pasarelas conocidas. */
+function gt_pay_labels() {
+  return array(
     'woo-mercado-pago-basic' => 'Mercado Pago', 'woo-mercado-pago-custom' => 'Tarjeta débito y crédito', 'woo-mercado-pago-pse' => 'PSE',
     'openpay_pse' => 'PSE', 'bacs' => 'Transferencia bancaria', 'wompi' => 'Wompi', 'addi' => 'Addi', 'payvalida' => 'Payvalida',
     'sumas_pay' => 'SU+ Pay', 'wcsistecredito' => 'Sistecrédito', 'epayco' => 'ePayco', 'cod' => 'Contraentrega',
   );
+}
+
+/**
+ * Clave de la caché de pasarelas: lleva una firma de los plugins activos y de qué pasarela está encendida,
+ * así una lista vieja (carreras al guardar, plugins desactivados) nunca se vuelve a leer.
+ */
+function gt_pay_cache_key() {
+  static $key = null;
+  if ($key !== null) return $key;
+  $parts = array(get_option('active_plugins'), get_option('woocommerce_gateway_order'));
+  $ids = array_unique(array_merge(array_keys(gt_pay_labels()), array_keys((array) gt_opt('pm_map', array()))));
+  foreach ($ids as $id) {
+    $s = get_option('woocommerce_' . $id . '_settings');
+    $parts[] = $id . ':' . (is_array($s) && isset($s['enabled']) ? $s['enabled'] : '-');
+  }
+  return $key = 'gt_payg_' . GT_VER . '_' . substr(md5(serialize($parts)), 0, 10);
+}
+
+/** Pasarelas activas en la tienda: id => nombre corto. */
+function gt_pay_gateways() {
+  static $memo = null;
+  if ($memo !== null) return $memo;
+  $cached = get_transient(gt_pay_cache_key());
+  if (is_array($cached)) return $memo = $cached;
+  $labels = gt_pay_labels();
   $out = array();
   if (function_exists('WC') && WC()->payment_gateways()) {
     foreach (WC()->payment_gateways()->payment_gateways() as $id => $g) {
       if (!isset($g->enabled) || $g->enabled !== 'yes') continue;
       $label = isset($labels[$id]) ? $labels[$id] : trim(wp_strip_all_tags((string) $g->get_title()));
-      if ($label !== '') $out[$label] = true;
+      if ($label !== '') $out[$id] = $label;
     }
   }
-  $memo = array_keys($out);
-  set_transient('gt_pay_' . GT_VER, $memo, 12 * HOUR_IN_SECONDS);
-  return $memo;
+  set_transient(gt_pay_cache_key(), $out, 12 * HOUR_IN_SECONDS);
+  return $memo = $out;
+}
+
+/** Medios de pago activos en la tienda (nombres cortos, sin repetir). */
+function gt_pay_methods() {
+  return array_values(array_unique(array_values(gt_pay_gateways())));
 }
 
 /** Enlace a una página solo si está publicada. */

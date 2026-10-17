@@ -20,6 +20,14 @@ function gt_defaults() {
     'fin_siste'  => '2,3,4,6',
     'fin_sumas'  => '3,6,12,24,36',
     'fin_tc'     => '1,3,6,12,24,36',
+    // Precio según el medio de pago (inc/paymethods.php): apagado hasta que el dueño lo active
+    'pm_mode'      => 'off',
+    'pm_groups'    => gt_pm_default_groups(),
+    'pm_map'       => gt_pm_default_map(),
+    'pm_skip_sale' => 0,
+    'pm_no_coupon' => 0,
+    'pm_text'      => 'El descuento se aplica en el pago al elegir el medio.',
+    'pm_until'     => '',
     'sliders'    => '7,2',
     'hero_title' => 'Tecnología a cuotas y con envío a toda Colombia',
     'hero_sub'   => 'Portátiles, televisores, impresoras y gaming de Samsung, Lenovo, HP, Acer y más marcas. Paga con PSE, tarjeta o a cuotas con Addi, Sistecrédito o SU+ Pay.',
@@ -51,6 +59,7 @@ function gt_register_settings() {
 function gt_sanitize_opts($in) {
   $in = (array) $in;
   $d = gt_defaults();
+  $prev = (array) get_option('gt_opts', array());
   return array(
     'live'       => empty($in['live']) ? 0 : 1,
     'slim'       => empty($in['slim']) ? 0 : 1,
@@ -67,6 +76,13 @@ function gt_sanitize_opts($in) {
     'fin_siste'  => gt_sanitize_plazos(isset($in['fin_siste']) ? $in['fin_siste'] : $d['fin_siste']),
     'fin_sumas'  => gt_sanitize_plazos(isset($in['fin_sumas']) ? $in['fin_sumas'] : $d['fin_sumas']),
     'fin_tc'     => gt_sanitize_plazos(isset($in['fin_tc']) ? $in['fin_tc'] : $d['fin_tc']),
+    'pm_mode'      => (isset($in['pm_mode']) && in_array($in['pm_mode'], array('off', 'test', 'live'), true)) ? $in['pm_mode'] : 'off',
+    'pm_groups'    => gt_pm_sanitize_groups(isset($in['pm_groups']) ? $in['pm_groups'] : $d['pm_groups'], isset($prev['pm_groups']) ? $prev['pm_groups'] : array()),
+    'pm_map'       => gt_pm_keep_map(isset($in['pm_map']) ? $in['pm_map'] : (isset($prev['pm_map']) ? $prev['pm_map'] : $d['pm_map']), isset($prev['pm_map']) ? $prev['pm_map'] : $d['pm_map']),
+    'pm_skip_sale' => empty($in['pm_skip_sale']) ? 0 : 1,
+    'pm_no_coupon' => empty($in['pm_no_coupon']) ? 0 : 1,
+    'pm_text'      => mb_substr(gt_pm_clean_text(isset($in['pm_text']) ? $in['pm_text'] : $d['pm_text']), 0, 140),
+    'pm_until'     => gt_pm_sanitize_until(isset($in['pm_until']) ? $in['pm_until'] : ''),
     'sliders'    => implode(',', array_filter(array_map('absint', explode(',', isset($in['sliders']) ? (string) $in['sliders'] : '')))),
     'hero_title' => sanitize_text_field(isset($in['hero_title']) ? $in['hero_title'] : $d['hero_title']),
     'hero_sub'   => sanitize_text_field(isset($in['hero_sub']) ? $in['hero_sub'] : $d['hero_sub']),
@@ -149,6 +165,13 @@ function gt_settings_page() {
           <p><label>SU+ Pay <input type="text" class="regular-text" name="<?php echo esc_attr($f('fin_sumas')); ?>" value="<?php echo esc_attr($o['fin_sumas']); ?>"></label></p>
           <p><label>Tarjeta de crédito <input type="text" class="regular-text" name="<?php echo esc_attr($f('fin_tc')); ?>" value="<?php echo esc_attr($o['fin_tc']); ?>"></label></p>
           <p class="description">Números de cuotas separados por coma. Solo se muestran las formas de pago activas en WooCommerce. Vacío = no mostrar esa opción.</p></td></tr>
+      </table>
+      <h2 id="gt-pm">Precio según el medio de pago</h2>
+      <table class="form-table" role="presentation">
+        <?php gt_pm_settings_rows($o, $f); ?>
+      </table>
+      <h2>Portada y contacto</h2>
+      <table class="form-table" role="presentation">
         <tr><th scope="row"><label for="gt-lg">Logo (ID de imagen)</label></th><td>
           <input id="gt-lg" type="number" min="0" class="small-text" name="<?php echo esc_attr($f('logo_id')); ?>" value="<?php echo esc_attr($o['logo_id']); ?>">
           <p class="description">0 = el logo oscuro de la cabecera anterior (MOVIL-2). Para cambiarlo, escribe el ID de otra imagen de Medios con fondo negro.</p></td></tr>

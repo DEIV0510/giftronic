@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Giftronic Rediseño
  * Description:       Rediseño de la tienda: cabecera, portada, categorías con filtros, ficha de producto, carrito y pie. Arranca en vista previa (solo administradores); se publica para todos en Ajustes → Rediseño Giftronic. Al desactivarlo la tienda vuelve a verse como antes.
- * Version:           1.3.3
+ * Version:           1.4.0
  * Author:            Giftronic04
  * Requires at least: 6.0
  * Requires PHP:      7.4
@@ -11,7 +11,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('GT_VER', '1.3.3');
+define('GT_VER', '1.4.0');
 define('GT_DIR', plugin_dir_path(__FILE__));
 define('GT_URL', plugin_dir_url(__FILE__));
 
@@ -25,6 +25,7 @@ require_once GT_DIR . 'inc/product.php';
 require_once GT_DIR . 'inc/home.php';
 require_once GT_DIR . 'inc/perf.php';
 require_once GT_DIR . 'inc/financing.php';
+require_once GT_DIR . 'inc/paymethods.php';
 
 /**
  * ¿Se muestra el rediseño en esta petición?
@@ -176,8 +177,15 @@ function gt_handle_toggle() {
   exit;
 }
 
-/** Al guardar o borrar un producto, se recalculan los filtros. */
+/**
+ * Al guardar o borrar un producto, se recalculan los filtros y las cachés de la portada. Los hooks de WooCommerce corren
+ * después de guardar los datos del producto (precios y descuentos por medio de pago), así la caché nueva no sale vieja.
+ */
 add_action('save_post_product', 'gt_flush_index');
+add_action('woocommerce_new_product', 'gt_flush_index');
+add_action('woocommerce_update_product', 'gt_flush_index');
+add_action('woocommerce_update_product_variation', 'gt_flush_index');
 add_action('woocommerce_product_set_stock_status', 'gt_flush_index');
 add_action('delete_post', 'gt_flush_index');
-function gt_flush_index() { update_option('gt_index_ver', time(), false); }
+// Un valor que no se repite (no se lee el anterior): dos guardados simultáneos nunca dejan la misma versión.
+function gt_flush_index() { update_option('gt_index_ver', str_replace('.', '', uniqid('', true)) . wp_rand(100, 999), false); }

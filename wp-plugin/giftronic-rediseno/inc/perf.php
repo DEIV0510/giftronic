@@ -116,7 +116,9 @@ function gt_preload_font() {
 /* ---------- Cachés ligeras (se invalidan cuando cambia un producto, su inventario o una categoría) ---------- */
 
 function gt_cache_key($name) {
-  return 'gt_' . $name . '_' . GT_VER . '_' . get_option('gt_index_ver', 0);
+  // Con «precio según el medio de pago» en prueba, los administradores ven otras tarjetas: caché aparte.
+  $pm = (function_exists('gt_pm_on') && gt_pm_on()) ? '_pm' : '';
+  return 'gt_' . $name . '_' . GT_VER . '_' . get_option('gt_index_ver', 0) . $pm;
 }
 
 /** Guarda en caché el HTML que imprime $fn durante $ttl segundos. */
@@ -137,8 +139,43 @@ foreach (array('woocommerce_product_set_stock', 'woocommerce_variation_set_stock
 }
 unset($gt_hook);
 
-/** Los medios de pago se recalculan si cambia la configuración de alguna pasarela. */
-add_action('updated_option', 'gt_maybe_flush_pay', 10, 1);
-function gt_maybe_flush_pay($name) {
-  if (preg_match('/^woocommerce_.+_settings$|^woocommerce_gateway_order$/', (string) $name)) delete_transient('gt_pay_' . GT_VER);
+/**
+ * La lista de pasarelas activas se recalcula si cambia la configuración de alguna. Si cambia cuál está activa y está
+ * encendido el precio por medio de pago, también se vacían las cachés que muestran precios por grupo (portada y LiteSpeed):
+ * así ninguna página anuncia un descuento con un medio que ya no aparece en el pago.
+ */
+add_action('updated_option', 'gt_maybe_flush_pay', 10, 3);
+add_action('added_option', 'gt_maybe_flush_pay_added', 10, 2);
+add_action('delete_option', 'gt_maybe_flush_pay_deleting', 10, 1);
+add_action('activated_plugin', 'gt_flush_pay_plugin', 10, 1);
+add_action('deactivated_plugin', 'gt_flush_pay_plugin', 10, 1);
+function gt_maybe_flush_pay_added($name, $value) { gt_maybe_flush_pay($name, array(), $value); }
+function gt_maybe_flush_pay_deleting($name) {
+  $v = preg_match('/^woocommerce_.+_settings$/', (string) $name) ? get_option($name) : array();
+  gt_maybe_flush_pay($name, is_array($v) ? $v : array(), array());
+}
+function gt_maybe_flush_pay($name, $old = null, $new = null) {
+  $name = (string) $name;
+  if ($name === 'woocommerce_gateway_order') { delete_transient(gt_pay_cache_key()); return; }
+  if (!preg_match('/^woocommerce_(.+)_settings$/', $name, $m)) return;
+  $id = $m[1];
+  $map = (array) gt_opt('pm_map', array());
+  if (array_key_exists($id, gt_pay_labels()) || isset($map[$id])) delete_transient(gt_pay_cache_key());
+  // Las páginas solo se vacían si cambia cuál está activa y esa pasarela está en algún grupo de precio por medio de pago.
+  if (empty($map[$id])) return;
+  $was = is_array($old) && isset($old['enabled']) ? $old['enabled'] : 'no';
+  $now = is_array($new) && isset($new['enabled']) ? $new['enabled'] : 'no';
+  if ($was !== $now) gt_flush_pay_pages();
+}
+/** Al activar o desactivar un plugin de pasarela la firma de la caché cambia sola; las páginas se vacían si era de un grupo. */
+function gt_flush_pay_plugin($plugin) {
+  if (preg_match('/mercado|wompi|addi|payvalida|sistecredito|spay|sumas|woocommerce\.php/i', (string) $plugin)) gt_flush_pay_pages();
+}
+function gt_flush_pay_pages() {
+  static $done = false;
+  if ($done || !function_exists('gt_pm_mode') || gt_pm_mode() === 'off') return;
+  $done = true;
+  gt_flush_index();
+  // En prueba solo lo ven administradores, a quienes LiteSpeed no les sirve caché: basta con la caché propia.
+  if (gt_pm_mode() === 'live') do_action('litespeed_purge_all');
 }

@@ -58,6 +58,12 @@
 .gt-p-fin{display:flex;align-items:flex-start;gap:8px;padding-top:8px;border-top:1px dashed var(--gt-border-strong);font-size:14px;color:var(--gt-text-2)}
 .gt-p-fin .gt-i{margin-top:1px;color:var(--gt-text)}
 .gt-p-fin a{color:var(--gt-text);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+/* Mejor precio según el medio de pago (recuadro de precio) */
+.gt-p-pm{display:grid;gap:2px;padding:10px 12px;background:var(--gt-success-bg);border-left:3px solid var(--gt-success);font-size:14px;color:var(--gt-text-2)}
+.gt-p-pm .v{font-size:15px;font-weight:700;color:var(--gt-text)}
+.gt-p-pm .v b{font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--gt-success);font-variant-numeric:tabular-nums}
+.gt-p-pm .s{font-size:13px}
+.gt-p-pm a{color:var(--gt-text);font-weight:700;text-decoration:underline;text-underline-offset:3px}
 @media (min-width:1024px){.gt-buy{gap:14px}.gt-pbox{padding:16px 18px;gap:10px}}
 /* Formulario de compra de WooCommerce */
 .gt-cartform form.cart{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:0!important;padding:0;border:0}
@@ -253,7 +259,7 @@ body.woocommerce-cart .site-content a:not(.button):not(.remove),body.woocommerce
    Precio según el medio de pago + calculadora de cuotas
    ===================================================================== */
 .gt-fin-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
-@media (min-width:1024px){.gt-fin-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:24px;align-items:start}}
+@media (min-width:1024px){.gt-fin-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:24px;align-items:start}.gt-fin-grid.gt-fin-solo{grid-template-columns:minmax(0,640px)}}
 .gt-pm{background:#fff;border:1px solid var(--gt-border);padding:18px}
 .gt-pm-h{font-size:15px;font-weight:800;margin:0 0 6px}
 .gt-pm-list{display:grid}
@@ -263,6 +269,8 @@ body.woocommerce-cart .site-content a:not(.button):not(.remove),body.woocommerce
 .gt-pm-list .m small,.gt-pm-list .v small{display:block;font-size:12.5px;color:var(--gt-muted-strong);font-weight:600}
 .gt-pm-list .v{text-align:right;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .gt-pm-note{font-size:13px;color:var(--gt-muted-strong);margin-top:10px;line-height:1.45}
+.gt-pm-list .v .save{color:var(--gt-success);font-weight:800}
+.gt-pm-list .v .save s{display:block;color:var(--gt-muted);font-weight:600}
 .gt-calc{background:#fff;border:1px solid var(--gt-border);padding:18px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
 @media (min-width:768px){.gt-calc{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);padding:24px;gap:24px;align-items:start}}
 .gt-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
